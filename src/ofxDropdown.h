@@ -64,7 +64,8 @@ public:
 		
 	void clear();
 	
-	std::string getOptionAt(size_t index);
+    string getSelectedOption();
+	string getOptionAt(size_t index);
 	
 	enum DropDownPosition{
 		DD_RIGHT,
@@ -112,6 +113,8 @@ protected:
 	virtual void generateDraw() override;
 		
 	virtual void render() override;
+    
+    virtual void renderText(const ofVboMesh &mesh, const ofColor &color);
 
 	vector<string> options;
     vector<T> values;
@@ -136,6 +139,7 @@ protected:
 private:
 	
 	std::vector<ofxDropdown_*> childDropdowns;
+    ofVboMesh optionMesh;
     
 };
 

@@ -187,6 +187,13 @@ void ofxDropdown_<T>::clear(){
 }
 //--------------------------------------------------------------
 template<class T>
+string ofxDropdown_<T>::getSelectedOption(){
+    auto it = find(values.begin(), values.end(), selectedValue.get());
+    int index = std::distance(values.begin(), it);
+    return options[index];
+}
+//--------------------------------------------------------------
+template<class T>
 string ofxDropdown_<T>::getOptionAt(size_t index){
 	if(index < group.getNumControls()){
 		return group.getControl(index)->getName();
@@ -345,28 +352,93 @@ void ofxDropdown_<T>::setDropDownPosition(DropDownPosition pos){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::generateDraw(){
-	ofxToggle::generateDraw();
-	arrow.clear();
-	auto h = b.getHeight();
-	auto x2 = b.getMaxX();
-	
-	auto y = b.getY();
-	
-	arrow.setStrokeColor(thisTextColor);
-	arrow.setStrokeWidth(2);
-	arrow.setFilled(false);
-	arrow.moveTo(x2 - h /2,  y  + textPadding);
-	arrow.lineTo(x2 - textPadding,  y  + h/2 );
-	arrow.lineTo(x2 - h /2,  y  + h - textPadding);
+    bg.clear();
+    bg.setFillColor(thisBackgroundColor);
+    bg.rectangle(b);
+    
+    string name;
+    auto textX = b.x + textPadding;
+    if(getTextBoundingBox(getName(), textX, 0).getMaxX() > b.getMaxX() - textPadding){
+        for(auto c: ofUTF8Iterator(getName())){
+            auto next = name;
+            ofUTF8Append(next, c);
+            if(getTextBoundingBox(next,textX,0).getMaxX() > b.getMaxX() - textPadding){
+                break;
+            }else{
+                name = next;
+            }
+        }
+    }else{
+        name = getName();
+    }
+    
+    textMesh = getTextMesh(name, textX, b.y+b.height / 2 + 4);
+    
+    string option;
+    auto optionX = getTextBoundingBox(name,textX,0).getMaxX() + textPadding;
+    if(getTextBoundingBox(getSelectedOption(), optionX, 0).getMaxX() > b.getMaxX() - b.getHeight()/2){
+        for(auto c: ofUTF8Iterator(getSelectedOption())){
+            auto next = option;
+            ofUTF8Append(next, c);
+            if(getTextBoundingBox(next,optionX,0).getMaxX() > b.getMaxX() - b.getHeight()/2){
+                break;
+            }else{
+                option = next;
+            }
+        }
+    }else{
+        option = getSelectedOption();
+    }
+    
+    optionMesh = getTextMesh(option, optionX, b.y+b.height / 2 + 4);
+    
+    arrow.clear();
+    auto h = b.getHeight();
+    auto x2 = b.getMaxX();
+    
+    auto y = b.getY();
+    
+    arrow.setStrokeColor(thisTextColor);
+    arrow.setStrokeWidth(2);
+    arrow.setFilled(false);
+    arrow.moveTo(x2 - h /2,  y  + textPadding);
+    arrow.lineTo(x2 - textPadding,  y  + h/2 );
+    arrow.lineTo(x2 - h /2,  y  + h - textPadding);
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::render(){
-	ofxToggle::render();
+    bg.draw();
+    fg.draw();
+    
+    if( value ){
+        cross.draw();
+    }
+    renderText(textMesh, thisTextColor);
 	if(bGroupEnabled){
 		group.draw();
 	}
 	arrow.draw();
+    renderText(optionMesh, ofColor(127));
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::renderText(const ofVboMesh &mesh, const ofColor &color) {
+    ofColor c = ofGetStyle().color;
+    ofBlendMode blendMode = ofGetStyle().blendingMode;
+    if(blendMode!=OF_BLENDMODE_ALPHA){
+        ofEnableAlphaBlending();
+    }
+    ofSetColor(color);
+    
+    bindFontTexture();
+    mesh.draw();
+    unbindFontTexture();
+    
+    ofSetColor(c);
+    if(blendMode!=OF_BLENDMODE_ALPHA){
+        ofEnableBlendMode(blendMode);
+    }
 }
 //--------------------------------------------------------------
 template<class T>
