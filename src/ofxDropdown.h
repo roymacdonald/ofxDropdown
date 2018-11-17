@@ -12,22 +12,25 @@
 #include "ofParameter.h"
 #include "ofxBaseGui.h"
 
-#include "ofxToggle.h"
-
-#include "ofxGuiGroup.h"
+#include "ofxDropdownOption.hpp"
+#include "ofxDropdownOptions.hpp"
 
 
 #define USAR_MOUSE_RELEASED
 
-class ofxDropdown: public ofxToggle{
+using namespace std;
+
+template<class T>
+class ofxDropdown_: public ofxDropdownOption{
 
 public:
-	ofxDropdown(){};
-	ofxDropdown(std::string name, float width = defaultWidth, float height = defaultHeight);
-	ofxDropdown(ofParameter<std::string> param, float width = defaultWidth, float height = defaultHeight);
-	ofxDropdown * setup(ofParameter<std::string> param, float width = defaultWidth, float height = defaultHeight);
-	ofxDropdown * setup(std::string name, float width = defaultWidth, float height = defaultHeight);
-//	ofxDropdown * setup(const std::string& name, const std::vector<std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
+	ofxDropdown_(){};
+	ofxDropdown_(std::string name, float width = defaultWidth, float height = defaultHeight);
+	ofxDropdown_(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
+    ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
+	ofxDropdown_ * setup(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
+	ofxDropdown_ * setup(std::string name, float width = defaultWidth, float height = defaultHeight);
+//	ofxDropdown_ * setup(const std::string& name, const std::vector<std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
 	
 	void enableCollapseOnSelection();
 	void disableCollapseOnSelection();
@@ -37,11 +40,13 @@ public:
 	void disableMultipleSelection();
 	bool isEnabledMultipleSelection();
 	
-	ofxDropdown * add(const std::string& option);
-	ofxDropdown * add(const std::vector<std::string> & options);
-	ofxDropdown * addDropdown(ofxDropdown* dd); 
-	ofxDropdown * newDropdown(std::string name); 
-	ofxDropdown * newDropdown(ofParameter<std::string> param);
+    ofxDropdown_ * add(const T& value);
+    ofxDropdown_ * add(const T& value, const string& option);
+	ofxDropdown_ * add(const std::vector<T> & options);
+    ofxDropdown_ * add(const std::map<T, std::string> & options);
+	ofxDropdown_ * addDropdown(ofxDropdown_* dd);
+	ofxDropdown_ * newDropdown(std::string name);
+	ofxDropdown_ * newDropdown(ofParameter<T> param);
 	
 
 	virtual bool mouseReleased(ofMouseEventArgs & args) override;
@@ -94,10 +99,9 @@ public:
 	
 protected:
 	
+	bool setValue(float mx, float my, bool bCheck);
 	
-	
-	template<typename T>
-	void disableElement(T* e, bool bCheckAgainstThis = false);
+	void disableElement(ofxDropdownOption* e, bool bCheckAgainstThis = false);
 	
 	int myMouseEventsPriority;
 	
@@ -109,22 +113,21 @@ protected:
 		
 	virtual void render() override;
 
-	std::vector<std::string> options;
+	vector<string> options;
+    vector<T> values;
 	
-	ofParameter<std::string> selectedValue;
+	ofParameter<T> selectedValue;
 	
-	
-
 	void groupChanged( const void * sender,bool&);
 	bool bGroupEnabled = false;
 	
-	void valueChanged(std::string & value);		
+	void valueChanged(T & value);
 
 	void buttonClicked(bool &);
 	
 	void childDropdownHidden(const void * sender, std::string&);
 	
-	ofxGuiGroup group;
+	ofxDropdownOptions group;
 	ofEventListeners groupListeners;
 	ofEventListeners childDropdownListeners;
 	
@@ -132,6 +135,9 @@ protected:
 	ofPath arrow;
 private:
 	
-	std::vector<ofxDropdown*> childDropdowns;
+	std::vector<ofxDropdown_*> childDropdowns;
     
 };
+
+typedef ofxDropdown_<string> ofxDropdown;
+typedef ofxDropdown_<int> ofxIntDropdown;

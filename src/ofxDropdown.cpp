@@ -11,20 +11,23 @@
 #include "ofGraphics.h"
 #include "ofxGui.h"
 
-
-ofParameter<bool> ofxDropdown::bCollapseOnSelection = ofParameter<bool>("Collapse On Selection", false);
-ofParameter<bool> ofxDropdown::bMultiselection = ofParameter<bool>("Multiselection",false);
+template<class T>
+ofParameter<bool> ofxDropdown_<T>::bCollapseOnSelection = ofParameter<bool>("Collapse On Selection", false);
+template<class T>
+ofParameter<bool> ofxDropdown_<T>::bMultiselection = ofParameter<bool>("Multiselection",false);
 
 
 //--------------------------------------------------------------
-ofxDropdown::ofxDropdown(std::string name, float width, float height){
+template<class T>
+ofxDropdown_<T>::ofxDropdown_(std::string name, float width, float height){
 	return setup(name, width, height);
 }
 //--------------------------------------------------------------
-ofxDropdown * ofxDropdown::setup(std::string name, float width , float height ){
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float height ){
 
 	ofxToggle::setup(name, false , width, height);
-	buttonListener = value.newListener(this,&ofxDropdown::buttonClicked);
+	buttonListener = value.newListener(this,&ofxDropdown_::buttonClicked);
 
 	selectedValue.setName(name);
 	group.setup();
@@ -35,24 +38,30 @@ ofxDropdown * ofxDropdown::setup(std::string name, float width , float height ){
 	return this;
 }
 //--------------------------------------------------------------
-ofxDropdown::ofxDropdown(ofParameter<std::string> param, float width , float height){
+template<class T>
+ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, float width , float height){
 	setup(param,width,height);
 }
+template<class T>
+ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width , float height){
+    setup(param,width,height);
+    add(dropDownOptions);
+}
 //--------------------------------------------------------------
-ofxDropdown * ofxDropdown::setup(ofParameter<std::string> param, float width, float height){
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, float height){
 	selectedValue.makeReferenceTo(param);
 	
 	return setup(param.getName(), width, height);
 
 }
 //--------------------------------------------------------------
-
-void ofxDropdown::groupChanged(const void * sender,bool& b){
+template<class T>
+void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 	if(b){
-	std::cout << __FUNCTION__ << std::endl;
 	if(sender){
 		if(!bGroupEnabled){
-			std::cout << "ofxDropdown::groupChanged(...) bGroupEnabled == false" << std::endl; 
+			std::cout << "ofxDropdown_::groupChanged(...) bGroupEnabled == false" << std::endl;
 		}else{
 
 			auto& g = group.getParameter().castGroup(); 
@@ -71,19 +80,21 @@ void ofxDropdown::groupChanged(const void * sender,bool& b){
 				}
 //				for(int i = 0; i <g.size(); i++){
 //					if(foundIndex != i){
-//						auto * dd = dynamic_cast <ofxDropdown *>(group.getControl(i));
+//						auto * dd = dynamic_cast <ofxDropdown_ *>(group.getControl(i));
 //						if(dd){
 //							dd->hideDropdown();
 //						}else{
 //
-//							disableElement(dynamic_cast <ofxToggle *>(group.getControl(i)));
+//							disableElement(dynamic_cast <ofxDropdownOption *>(group.getControl(i)));
 //						}
 //					}
 //				}
-				auto newVal = g.getVoid(foundIndex).getName();
-				selectedValue = newVal;
-				ofNotifyEvent(change_E, newVal, this);
-				std::cout << "ofxDropdown::groupChanged(...) sender " << newVal << std::endl;		
+				auto selectedOption = g.getVoid(foundIndex).getName();
+                auto it = find(options.begin(), options.end(), selectedOption);
+                int index = std::distance(options.begin(), it);
+				selectedValue = values[index];
+				ofNotifyEvent(change_E, options[index], this);
+				//std::cout << "ofxDropdown_::groupChanged(...) sender " << selectedValue << std::endl;
 			}
 			if(bCollapseOnSelection){
 				hideDropdown("groupChanged");
@@ -91,57 +102,75 @@ void ofxDropdown::groupChanged(const void * sender,bool& b){
 			
 		}
 	}else{
-		std::cout << "ofxDropdown::groupChanged(...) sender = null" << std::endl;
+		std::cout << "ofxDropdown_::groupChanged(...) sender = null" << std::endl;
 	}
 
 }
 
 }
 //--------------------------------------------------------------
-ofxDropdown * ofxDropdown::add(const std::string& option){
-	options.push_back(option);
-
-	auto o = new ofxToggle();
-	o->setup(option, false);
-	groupListeners.push(o->getParameter().cast<bool>().newListener(this, &ofxDropdown::groupChanged));
-	
-	group.add(o);
-	return this;
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value) {
+    return add(value, ofToString(value));
+}
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
+    options.push_back(option);
+    values.push_back(value);
+    
+    auto o = new ofxDropdownOption();
+    o->setup(option, value == selectedValue.get());
+    groupListeners.push(o->getParameter().cast<bool>().newListener(this, &ofxDropdown_::groupChanged));
+    
+    group.add(o);
+    return this;
 }
 //--------------------------------------------------------------
-ofxDropdown * ofxDropdown::add(const std::vector<std::string> & options){
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::add(const vector<T> & options){
 	for(auto& option: options){
 		add(option);
 	}
 	return this;
 }
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::add(const map<T,string> & options){
+    for(auto& option: options){
+        add(option.first, option.second);
+    }
+    return this;
+}
 //--------------------------------------------------------------
-ofxDropdown * ofxDropdown::addDropdown(ofxDropdown* dd){
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_* dd){
 	if(dd){
 		group.add(dd);
 		childDropdowns.push_back(dd);
-		childDropdownListeners.push(dd->dropdownHidden_E.newListener(this, &ofxDropdown::childDropdownHidden));
+		childDropdownListeners.push(dd->dropdownHidden_E.newListener(this, &ofxDropdown_::childDropdownHidden));
 	}else{
-		ofLogWarning("ofxDropdown::addDropdown", "cant add nullptr dropdown");
+		ofLogWarning("ofxDropdown_::addDropdown", "cant add nullptr dropdown");
 	}
 	return dd;
 }
 //--------------------------------------------------------------
-ofxDropdown * ofxDropdown::newDropdown(std::string name){
-	return addDropdown(new ofxDropdown(name, getWidth(), getHeight()));	
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(std::string name){
+	return addDropdown(new ofxDropdown_(name, getWidth(), getHeight()));
 }
 //--------------------------------------------------------------
-ofxDropdown * ofxDropdown::newDropdown(ofParameter<std::string> param){
-	return addDropdown(new ofxDropdown(param, getWidth(), getHeight()));
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(ofParameter<T> param){
+	return addDropdown(new ofxDropdown_(param, getWidth(), getHeight()));
 }
 //--------------------------------------------------------------
-void ofxDropdown::childDropdownHidden(const void * sender, std::string& s){
+template<class T>
+void ofxDropdown_<T>::childDropdownHidden(const void * sender, std::string& s){
 	std::cout << "childDropdownHidden callback: "<< getName() << ". eventParam: " << s << std::endl;
 //	auto& g = group.getParameter().castGroup(); 
 	
 //	int foundIndex = -1; 
 //	for(auto * c: childDropdowns){
-//		if(c == ((ofxDropdown *)(sender))){
+//		if(c == ((ofxDropdown_ *)(sender))){
 //			
 //		}
 //	}
@@ -151,20 +180,23 @@ void ofxDropdown::childDropdownHidden(const void * sender, std::string& s){
 //	}
 }
 //--------------------------------------------------------------
-void ofxDropdown::clear(){
+template<class T>
+void ofxDropdown_<T>::clear(){
 	group.clear();
 	childDropdowns.clear();
 }
 //--------------------------------------------------------------
-std::string ofxDropdown::getOptionAt(size_t index){
+template<class T>
+string ofxDropdown_<T>::getOptionAt(size_t index){
 	if(index < group.getNumControls()){
 		return group.getControl(index)->getName();
 	}
-	ofLogNotice("ofxDropdown::getOptionAt", "index is out of bounds");
+	ofLogNotice("ofxDropdown_::getOptionAt", "index is out of bounds");
 	return "";
 }
 //--------------------------------------------------------------
-void ofxDropdown::showDropdown(bool bDisableSiblings){
+template<class T>
+void ofxDropdown_<T>::showDropdown(bool bDisableSiblings){
 	if(!bGroupEnabled){
 		bGroupEnabled = true;
 		switch(dropDownPosition){
@@ -188,17 +220,18 @@ void ofxDropdown::showDropdown(bool bDisableSiblings){
 }
 
 //--------------------------------------------------------------
-void ofxDropdown::disableSiblings(ofxBaseGui* parent, ofxBaseGui * child){
+template<class T>
+void ofxDropdown_<T>::disableSiblings(ofxBaseGui* parent, ofxBaseGui * child){
 	if(parent != nullptr){
 		auto* p = dynamic_cast<ofxGuiGroup *>(parent);
 		if(p){
 			for(int i = 0; i < p->getNumControls(); i++ ){
-				auto * dd = dynamic_cast <ofxDropdown *>(p->getControl(i));
+				auto * dd = dynamic_cast <ofxDropdown_ *>(p->getControl(i));
 				if(dd && dd != child){
 					dd->hideDropdown("disableSiblings",false);
 				}else{
 					if(child != p->getControl(i)){
-						disableElement(dynamic_cast <ofxToggle *>(p->getControl(i)), true);
+						disableElement(dynamic_cast <ofxDropdownOption *>(p->getControl(i)), true);
 					}
 				}
 			}
@@ -206,19 +239,18 @@ void ofxDropdown::disableSiblings(ofxBaseGui* parent, ofxBaseGui * child){
 	}
 }
 //--------------------------------------------------------------
-template<typename T>
-void ofxDropdown::disableElement(T* e, bool bCheckAgainstThis){
+template<class T>
+void ofxDropdown_<T>::disableElement(ofxDropdownOption* e, bool bCheckAgainstThis){
 	if(e){
 		if(bCheckAgainstThis && e == this){
 			return;
 		}
-		e->bGuiActive = false;
-		e->value.setWithoutEventNotifications(false);
-		e->setNeedsRedraw();
+        e->disableElement();
 	}
 }
 //--------------------------------------------------------------
-bool ofxDropdown::mouseReleased(ofMouseEventArgs & args){
+template<class T>
+bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
 	if(ofxToggle::mouseReleased(args) || b.inside(args)){
 		return true;
 	}
@@ -234,17 +266,19 @@ bool ofxDropdown::mouseReleased(ofMouseEventArgs & args){
 	return false;
 }
 //--------------------------------------------------------------
-bool ofxDropdown::mousePressed(ofMouseEventArgs & args){
-	if(ofxToggle::mousePressed(args)){
-		return true;
-	}
+template<class T>
+bool ofxDropdown_<T>::mousePressed(ofMouseEventArgs & args){
+    if(setValue(args.x, args.y, true)){
+        return true;
+    }
 	if(isShowingDropdown()){
 		return group.mousePressed(args);
 	}
 	return false;
 }
 //--------------------------------------------------------------
-bool ofxDropdown::mouseMoved(ofMouseEventArgs & args){
+template<class T>
+bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
 	if(ofxToggle::mouseMoved(args)){
 		return true;
 	}
@@ -254,7 +288,8 @@ bool ofxDropdown::mouseMoved(ofMouseEventArgs & args){
 	return false;
 }
 //--------------------------------------------------------------
-bool ofxDropdown::mouseDragged(ofMouseEventArgs & args){
+template<class T>
+bool ofxDropdown_<T>::mouseDragged(ofMouseEventArgs & args){
 	if(ofxToggle::mouseDragged(args)){
 		return true;
 	}
@@ -264,7 +299,8 @@ bool ofxDropdown::mouseDragged(ofMouseEventArgs & args){
 	return false;
 }
 //--------------------------------------------------------------
-bool ofxDropdown::mouseScrolled(ofMouseEventArgs & args){
+template<class T>
+bool ofxDropdown_<T>::mouseScrolled(ofMouseEventArgs & args){
 	if(ofxToggle::mouseScrolled(args)){
 		return true;
 	}
@@ -275,9 +311,10 @@ bool ofxDropdown::mouseScrolled(ofMouseEventArgs & args){
 }
 
 //--------------------------------------------------------------
-void ofxDropdown::hideDropdown(std::string caller, bool bNotifyEvent){
+template<class T>
+void ofxDropdown_<T>::hideDropdown(std::string caller, bool bNotifyEvent){
 	if(bGroupEnabled){
-		std::cout << caller << "  hiding dropdown: "<< getName() << ". notify: " << (bNotifyEvent?"TRUE":"FALSE") << std::endl;
+		//std::cout << caller << "  hiding dropdown: "<< getName() << ". notify: " << (bNotifyEvent?"TRUE":"FALSE") << std::endl;
 		bGroupEnabled = false;
 		auto n = value.getName();
 		disableElement(this);
@@ -287,12 +324,13 @@ void ofxDropdown::hideDropdown(std::string caller, bool bNotifyEvent){
 	}
 }
 //--------------------------------------------------------------
-bool ofxDropdown::isShowingDropdown(){
+template<class T>
+bool ofxDropdown_<T>::isShowingDropdown(){
 	return bGroupEnabled;
 }
 //--------------------------------------------------------------
-
-void ofxDropdown::buttonClicked(bool &v){
+template<class T>
+void ofxDropdown_<T>::buttonClicked(bool &v){
 	if(v && !bGroupEnabled){
 		showDropdown();
 	}else if(!v && bGroupEnabled){
@@ -300,11 +338,13 @@ void ofxDropdown::buttonClicked(bool &v){
 	}
 }
 //--------------------------------------------------------------
-void ofxDropdown::setDropDownPosition(DropDownPosition pos){
+template<class T>
+void ofxDropdown_<T>::setDropDownPosition(DropDownPosition pos){
 	dropDownPosition = pos;
 }
 //--------------------------------------------------------------
-void ofxDropdown::generateDraw(){
+template<class T>
+void ofxDropdown_<T>::generateDraw(){
 	ofxToggle::generateDraw();
 	arrow.clear();
 	auto h = b.getHeight();
@@ -320,7 +360,8 @@ void ofxDropdown::generateDraw(){
 	arrow.lineTo(x2 - h /2,  y  + h - textPadding);
 }
 //--------------------------------------------------------------
-void ofxDropdown::render(){
+template<class T>
+void ofxDropdown_<T>::render(){
 	ofxToggle::render();
 	if(bGroupEnabled){
 		group.draw();
@@ -328,31 +369,64 @@ void ofxDropdown::render(){
 	arrow.draw();
 }
 //--------------------------------------------------------------
-ofAbstractParameter & ofxDropdown::getParameter(){
+template<class T>
+ofAbstractParameter & ofxDropdown_<T>::getParameter(){
 	return selectedValue;
 }
 
 //--------------------------------------------------------------
-void ofxDropdown::enableCollapseOnSelection(){
+template<class T>
+void ofxDropdown_<T>::enableCollapseOnSelection(){
 	bCollapseOnSelection = true;
 }
 //--------------------------------------------------------------
-void ofxDropdown::disableCollapseOnSelection(){
+template<class T>
+void ofxDropdown_<T>::disableCollapseOnSelection(){
 	bCollapseOnSelection = false;
 }
 //--------------------------------------------------------------
-bool ofxDropdown::isEnabledCollapseOnSelection(){
+template<class T>
+bool ofxDropdown_<T>::isEnabledCollapseOnSelection(){
 	return bCollapseOnSelection;
 }
 //--------------------------------------------------------------
-void ofxDropdown::enableMultipleSelection(){
+template<class T>
+void ofxDropdown_<T>::enableMultipleSelection(){
 	bMultiselection = true;
 }
 //--------------------------------------------------------------
-void ofxDropdown::disableMultipleSelection(){
+template<class T>
+void ofxDropdown_<T>::disableMultipleSelection(){
 	bMultiselection = false;
 }
 //--------------------------------------------------------------
-bool ofxDropdown::isEnabledMultipleSelection(){
+template<class T>
+bool ofxDropdown_<T>::isEnabledMultipleSelection(){
 	return bMultiselection;
 }
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::setValue(float mx, float my, bool bCheck){
+    
+    if( !isGuiDrawing() ){
+        bGuiActive = false;
+        return false;
+    }
+    if( bCheck ){
+        if( b.inside(mx, my) ){
+            bGuiActive = true;
+        }else{
+            bGuiActive = false;
+            
+        }
+    }
+    if( bGuiActive ){
+        value = !value;
+        return true;
+    }
+    return false;
+}
+
+
+template class ofxDropdown_<string>;
+template class ofxDropdown_<int>;
