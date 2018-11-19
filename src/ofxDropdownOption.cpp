@@ -21,7 +21,7 @@ bool ofxDropdownOption::setValue(float mx, float my, bool bCheck){
         }
     }
     if( bGuiActive ){
-        value = true;
+        value =  !value;
         return true;
     }
     return false;
