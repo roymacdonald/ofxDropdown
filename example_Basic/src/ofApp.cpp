@@ -8,7 +8,6 @@ void ofApp::setup(){
 	gui.setPosition(20,20);
 //	gui.add(paramVoid.set("void"));
 //	gui.add(paramBool.set("bool", false));
-	gui.add(ofxDropdown::bMultiselection);
 	gui.add(ofxDropdown::bCollapseOnSelection);
 	
 	options.setName("Options");
@@ -32,6 +31,21 @@ void ofApp::setup(){
 		}
 		if(i%3==0) dd = dd2;
 	}
+    
+    for(int i = 0; i < 15; i++){
+        ofParameter<vector<string>> multiParam;
+        multiParam.setName("Multi " + ofToString(i));
+        ofxDropdown* dd2 = new ofxDropdown(multiParam);
+        for(int j = 0; j < 5; j++){
+            dd2->add(ofToString(i)+"_"+string(1, j+'A'));
+        }
+        if(i == 0){
+            gui.add(dd2);
+        }else{
+            dd->addDropdown(dd2);
+        }
+        if(i%3==0) dd = dd2;
+    }
 	
 //	dd->add("A");
 //	dd->add("B");

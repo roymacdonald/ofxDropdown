@@ -13,9 +13,6 @@
 
 template<class T>
 ofParameter<bool> ofxDropdown_<T>::bCollapseOnSelection = ofParameter<bool>("Collapse On Selection", false);
-template<class T>
-ofParameter<bool> ofxDropdown_<T>::bMultiselection = ofParameter<bool>("Multiselection",false);
-
 
 //--------------------------------------------------------------
 template<class T>
@@ -30,6 +27,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	buttonListener = value.newListener(this,&ofxDropdown_::buttonClicked);
 
 	selectedValue.setName(name);
+    selectedValues.setName(name);
 	group.setup();
 	group.disableHeader();
 	group.setParent(this);
@@ -43,7 +41,17 @@ ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, float width , float height){
 	setup(param,width,height);
 }
 template<class T>
-ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width , float height){
+ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const std::map<T,std::string>& dropDownOptions, float width , float height){
+    setup(param,width,height);
+    add(dropDownOptions);
+}
+//--------------------------------------------------------------
+template<class T>
+ofxDropdown_<T>::ofxDropdown_(ofParameter<std::vector<T>> param, float width , float height){
+    setup(param,width,height);
+}
+template<class T>
+ofxDropdown_<T>::ofxDropdown_(ofParameter<std::vector<T>> param, const std::map<T,std::string>& dropDownOptions, float width , float height){
     setup(param,width,height);
     add(dropDownOptions);
 }
@@ -51,61 +59,58 @@ ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDow
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, float height){
 	selectedValue.makeReferenceTo(param);
-	
+    bMultiselection = false;
 	return setup(param.getName(), width, height);
-
+}
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<std::vector<T>> param, float width, float height){
+    selectedValues.makeReferenceTo(param);
+    bMultiselection = true;
+    return setup(param.getName(), width, height);
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
-	if(b){
-	if(sender){
-		if(!bGroupEnabled){
-			std::cout << "ofxDropdown_::groupChanged(...) bGroupEnabled == false" << std::endl;
-		}else{
-
-			auto& g = group.getParameter().castGroup(); 
-					
-			int foundIndex = -1; 
-			for(int i = 0; i <g.size(); i++){
-				//			std::cout <<  i  << "  -  ";
-				if(g.getBool(i).getInternalObject() == ((ofParameter<bool> *)(sender))->getInternalObject()){
-					foundIndex = i;
-					break;	
-				}
-			}
-			if(foundIndex >= 0){
-				if(!bMultiselection){
-					disableSiblings(&group, group.getControl(foundIndex));
-				}
-//				for(int i = 0; i <g.size(); i++){
-//					if(foundIndex != i){
-//						auto * dd = dynamic_cast <ofxDropdown_ *>(group.getControl(i));
-//						if(dd){
-//							dd->hideDropdown();
-//						}else{
-//
-//							disableElement(dynamic_cast <ofxDropdownOption *>(group.getControl(i)));
-//						}
-//					}
-//				}
-				auto selectedOption = g.getVoid(foundIndex).getName();
-                auto it = find(options.begin(), options.end(), selectedOption);
-                int index = std::distance(options.begin(), it);
-				selectedValue = values[index];
-				ofNotifyEvent(change_E, options[index], this);
-				//std::cout << "ofxDropdown_::groupChanged(...) sender " << selectedValue << std::endl;
-			}
-			if(bCollapseOnSelection){
-				hideDropdown("groupChanged");
-			}
-			
-		}
-	}else{
-		std::cout << "ofxDropdown_::groupChanged(...) sender = null" << std::endl;
-	}
-
-}
+    int index = -1;
+    auto& g = group.getParameter().castGroup();
+    if(sender){
+        if(!bGroupEnabled){
+            std::cout << "ofxDropdown_::groupChanged(...) bGroupEnabled == false" << std::endl;
+        }else{
+            for(int i = 0; i <g.size(); i++){
+                //            std::cout <<  i  << "  -  ";
+                if(g.getBool(i).getInternalObject() == ((ofParameter<bool> *)(sender))->getInternalObject()){
+                    index = i;
+                    break;
+                }
+            }
+        }
+    }else{
+        std::cout << "ofxDropdown_::groupChanged(...) sender = null" << std::endl;
+    }
+    if(index >= 0){
+        if(b){
+            if (bMultiselection) {
+                std::vector<T> newValues = selectedValues.get();
+                newValues.push_back(values[index]);
+                selectedValues.set(newValues);
+            }
+            else {
+                disableSiblings(&group, group.getControl(index));
+                selectedValue = values[index];
+            }
+            //std::cout << "ofxDropdown_::groupChanged(...) sender " << selectedValue << std::endl;
+            if(bCollapseOnSelection){
+                hideDropdown("groupChanged");
+            }
+            
+        } else if (bMultiselection) {
+            std::vector<T> newValues = selectedValues.get();
+            newValues.erase(std::remove(newValues.begin(), newValues.end(), values[index]), newValues.end());
+            selectedValues.set(newValues);
+        }
+        ofNotifyEvent(change_E, options[index], this);
+    }
 
 }
 //--------------------------------------------------------------
@@ -114,12 +119,18 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value) {
     return add(value, ofToString(value));
 }
 template<class T>
-ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
+ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const std::string& option) {
     options.push_back(option);
     values.push_back(value);
     
     auto o = new ofxDropdownOption();
-    o->setup(option, value == selectedValue.get());
+    if (bMultiselection) {
+        const std::vector<T> &selValues = selectedValues.get();
+        o->setup(option, std::find(selValues.begin(), selValues.end(), value) != selValues.end());
+    }
+    else {
+        o->setup(option, value == selectedValue.get());
+    }
     groupListeners.push(o->getParameter().cast<bool>().newListener(this, &ofxDropdown_::groupChanged));
     
     group.add(o);
@@ -127,14 +138,14 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
 }
 //--------------------------------------------------------------
 template<class T>
-ofxDropdown_<T> * ofxDropdown_<T>::add(const vector<T> & options){
+ofxDropdown_<T> * ofxDropdown_<T>::add(const std::vector<T> & options){
 	for(auto& option: options){
 		add(option);
 	}
 	return this;
 }
 template<class T>
-ofxDropdown_<T> * ofxDropdown_<T>::add(const map<T,string> & options){
+ofxDropdown_<T> * ofxDropdown_<T>::add(const std::map<T,std::string> & options){
     for(auto& option: options){
         add(option.first, option.second);
     }
@@ -187,15 +198,30 @@ void ofxDropdown_<T>::clear(){
 }
 //--------------------------------------------------------------
 template<class T>
-string ofxDropdown_<T>::getSelectedOption(){
-    auto it = find(values.begin(), values.end(), selectedValue.get());
-    int index = std::distance(values.begin(), it);
-    if (index < options.size()) return options[index];
-    return "";
+std::string ofxDropdown_<T>::getSelectedOption(){
+    std::string selectedOption = "";
+    if (bMultiselection) {
+        const std::vector<T> selValues = selectedValues.get();
+        for (int i=0; i<selValues.size(); i++) {
+            auto it = std::find(values.begin(), values.end(), selValues[i]);
+            if (it != values.end()) {
+                int index = std::distance(values.begin(), it);
+                selectedOption += (selectedOption.size() > 0 ? ","  : "") + options[index];
+            }
+        }
+    }
+    else {
+        auto it = std::find(values.begin(), values.end(), selectedValue.get());
+        if (it != values.end()) {
+            int index = std::distance(values.begin(), it);
+            selectedOption = options[index];
+        }
+    }
+    return selectedOption;
 }
 //--------------------------------------------------------------
 template<class T>
-string ofxDropdown_<T>::getOptionAt(size_t index){
+std::string ofxDropdown_<T>::getOptionAt(size_t index){
 	if(index < group.getNumControls()){
 		return group.getControl(index)->getName();
 	}
@@ -357,7 +383,7 @@ void ofxDropdown_<T>::generateDraw(){
     bg.setFillColor(thisBackgroundColor);
     bg.rectangle(b);
     
-    string name;
+    std::string name;
     auto textX = b.x + textPadding;
     if(getTextBoundingBox(getName(), textX, 0).getMaxX() > b.getMaxX() - textPadding){
         for(auto c: ofUTF8Iterator(getName())){
@@ -375,7 +401,7 @@ void ofxDropdown_<T>::generateDraw(){
     
     textMesh = getTextMesh(name, textX, b.y+b.height / 2 + 4);
     
-    string option;
+    std::string option;
     auto optionX = getTextBoundingBox(name,textX,0).getMaxX() + textPadding;
     if(getTextBoundingBox(getSelectedOption(), optionX, 0).getMaxX() > b.getMaxX() - b.getHeight()/2){
         for(auto c: ofUTF8Iterator(getSelectedOption())){
@@ -444,6 +470,9 @@ void ofxDropdown_<T>::renderText(const ofVboMesh &mesh, const ofColor &color) {
 //--------------------------------------------------------------
 template<class T>
 ofAbstractParameter & ofxDropdown_<T>::getParameter(){
+    if (bMultiselection) {
+        return selectedValues;
+    }
 	return selectedValue;
 }
 
@@ -461,21 +490,6 @@ void ofxDropdown_<T>::disableCollapseOnSelection(){
 template<class T>
 bool ofxDropdown_<T>::isEnabledCollapseOnSelection(){
 	return bCollapseOnSelection;
-}
-//--------------------------------------------------------------
-template<class T>
-void ofxDropdown_<T>::enableMultipleSelection(){
-	bMultiselection = true;
-}
-//--------------------------------------------------------------
-template<class T>
-void ofxDropdown_<T>::disableMultipleSelection(){
-	bMultiselection = false;
-}
-//--------------------------------------------------------------
-template<class T>
-bool ofxDropdown_<T>::isEnabledMultipleSelection(){
-	return bMultiselection;
 }
 //--------------------------------------------------------------
 template<class T>
@@ -501,5 +515,5 @@ bool ofxDropdown_<T>::setValue(float mx, float my, bool bCheck){
 }
 
 
-template class ofxDropdown_<string>;
+template class ofxDropdown_<std::string>;
 template class ofxDropdown_<int>;

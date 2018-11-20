@@ -18,8 +18,6 @@
 
 #define USAR_MOUSE_RELEASED
 
-using namespace std;
-
 template<class T>
 class ofxDropdown_: public ofxDropdownOption{
 
@@ -27,8 +25,11 @@ public:
 	ofxDropdown_(){};
 	ofxDropdown_(std::string name, float width = defaultWidth, float height = defaultHeight);
 	ofxDropdown_(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
-    ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
+    ofxDropdown_(ofParameter<T> param, const std::map<T,std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
+    ofxDropdown_(ofParameter<std::vector<T>> param, float width = defaultWidth, float height = defaultHeight);
+    ofxDropdown_(ofParameter<std::vector<T>> param, const std::map<T,std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
 	ofxDropdown_ * setup(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
+    ofxDropdown_ * setup(ofParameter<std::vector<T>> param, float width = defaultWidth, float height = defaultHeight);
 	ofxDropdown_ * setup(std::string name, float width = defaultWidth, float height = defaultHeight);
 //	ofxDropdown_ * setup(const std::string& name, const std::vector<std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
 	
@@ -36,12 +37,8 @@ public:
 	void disableCollapseOnSelection();
 	bool isEnabledCollapseOnSelection();
 	
-	void enableMultipleSelection();
-	void disableMultipleSelection();
-	bool isEnabledMultipleSelection();
-	
     ofxDropdown_ * add(const T& value);
-    ofxDropdown_ * add(const T& value, const string& option);
+    ofxDropdown_ * add(const T& value, const std::string& option);
 	ofxDropdown_ * add(const std::vector<T> & options);
     ofxDropdown_ * add(const std::map<T, std::string> & options);
 	ofxDropdown_ * addDropdown(ofxDropdown_* dd);
@@ -64,8 +61,8 @@ public:
 		
 	void clear();
 	
-    string getSelectedOption();
-	string getOptionAt(size_t index);
+    std::string getSelectedOption();
+    std::string getOptionAt(size_t index);
 	
 	enum DropDownPosition{
 		DD_RIGHT,
@@ -94,10 +91,12 @@ public:
 	void showDropdown(bool bDisableSiblings = true);
 	void hideDropdown(std::string caller, bool bNotifyEvent = true);
 	
-	static ofParameter<bool> bCollapseOnSelection;// = false;
-	static ofParameter<bool> bMultiselection;// = false;
+	static ofParameter<bool> bCollapseOnSelection;// = false
 	
-	
+    bool isMultipleSelection() {
+        return bMultiselection;
+    }
+    
 protected:
 	
 	bool setValue(float mx, float my, bool bCheck) override;
@@ -116,10 +115,12 @@ protected:
     
     virtual void renderText(const ofVboMesh &mesh, const ofColor &color);
 
-	vector<string> options;
-    vector<T> values;
+    std::vector<std::string> options;
+    std::vector<T> values;
 	
 	ofParameter<T> selectedValue;
+    ofParameter<std::vector<T>> selectedValues;
+    bool bMultiselection;
 	
 	void groupChanged( const void * sender,bool&);
 	bool bGroupEnabled = false;
@@ -143,5 +144,5 @@ private:
     
 };
 
-typedef ofxDropdown_<string> ofxDropdown;
+typedef ofxDropdown_<std::string> ofxDropdown;
 typedef ofxDropdown_<int> ofxIntDropdown;
