@@ -100,7 +100,7 @@ public:
 	
 protected:
 	
-	bool setValue(float mx, float my, bool bCheck);
+	bool setValue(float mx, float my, bool bCheck) override;
 	
 	void disableElement(ofxDropdownOption* e, bool bCheckAgainstThis = false);
 	

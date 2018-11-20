@@ -190,7 +190,8 @@ template<class T>
 string ofxDropdown_<T>::getSelectedOption(){
     auto it = find(values.begin(), values.end(), selectedValue.get());
     int index = std::distance(values.begin(), it);
-    return options[index];
+    if (index < options.size()) return options[index];
+    return "";
 }
 //--------------------------------------------------------------
 template<class T>
