@@ -30,17 +30,28 @@ public:
     ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
 	ofxDropdown_ * setup(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
 	ofxDropdown_ * setup(std::string name, float width = defaultWidth, float height = defaultHeight);
-//	ofxDropdown_ * setup(const std::string& name, const std::vector<std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
+//	std::ofxDropdown_ * setup(const std::string& name, const std::vector<std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
 	
-	void enableCollapseOnSelection();
-	void disableCollapseOnSelection();
-	bool isEnabledCollapseOnSelection();
+	static void enableCollapseOnSelection();
+	static void disableCollapseOnSelection();
+	static bool isEnabledCollapseOnSelection();
+	static ofParameter<bool> & getCollapseOnSelectionParameter();//this can be added to a gui
 	
-	void enableMultipleSelection();
-	void disableMultipleSelection();
-	bool isEnabledMultipleSelection();
+	static void enableMultipleSelection();
+	static void disableMultipleSelection();
+	static bool isEnabledMultipleSelection();
+	static ofParameter<bool> & getMultiSelectionParameter();//this can be added to a gui
 	
-    ofxDropdown_ * add(const T& value);
+	template<typename P>
+	typename std::enable_if<std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
+	add(const P& value){
+		return add(value, value.getBaseName());
+	}
+	template<typename P>
+    typename std::enable_if<!std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
+	add(const P& value){  
+	    return add(value, ofToString(value));
+	}
     ofxDropdown_ * add(const T& value, const string& option);
 	ofxDropdown_ * add(const std::vector<T> & options);
     ofxDropdown_ * add(const std::map<T, std::string> & options);
@@ -50,15 +61,10 @@ public:
 	
 
 	virtual bool mouseReleased(ofMouseEventArgs & args) override;
-
 	virtual bool mousePressed(ofMouseEventArgs & args) override;
-
 	virtual bool mouseMoved(ofMouseEventArgs & args) override;
-	
 	virtual bool mouseDragged(ofMouseEventArgs & args) override;
-	
 	virtual bool mouseScrolled(ofMouseEventArgs & args) override;
-	
 	
 	bool isShowingDropdown();
 		
@@ -93,19 +99,22 @@ public:
 	void showDropdown(bool bDisableSiblings = true);
 	void hideDropdown(std::string caller, bool bNotifyEvent = true);
 	
-	static ofParameter<bool> bCollapseOnSelection;// = false;
-	static ofParameter<bool> bMultiselection;// = false;
+	
 	
 	
 protected:
 	
-	bool setValue(float mx, float my, bool bCheck);
+//	ofParameter<bool> bCollapseOnSelection;// = false;
+//	ofParameter<bool> bMultiselection;// = false;
+	
+	
+	virtual bool setValue(float mx, float my, bool bCheck) override;
 	
 	void disableElement(ofxDropdownOption* e, bool bCheckAgainstThis = false);
 	
 	int myMouseEventsPriority;
 	
-	void disableSiblings(ofxBaseGui* parent, ofxBaseGui * child);
+	void disableSiblings(ofxBaseGui* parent, ofxBaseGui* child);
 	
 	DropDownPosition dropDownPosition = DD_RIGHT;
 	
@@ -135,9 +144,10 @@ protected:
 	ofPath arrow;
 private:
 	
-	std::vector<ofxDropdown_*> childDropdowns;
+	std::vector<ofxDropdown_ *> childDropdowns;
     
 };
 
 typedef ofxDropdown_<string> ofxDropdown;
 typedef ofxDropdown_<int> ofxIntDropdown;
+typedef ofxDropdown_<ofFile> ofxDirDropdown;

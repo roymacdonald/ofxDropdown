@@ -2,9 +2,10 @@
 
 #include "ofxGuiGroup.h"
 
-class ofxDropdownOptions : public ofxGuiGroup {
+typedef ofxGuiGroup ofxDropdownOptions;
+//class ofxDropdownOptions : public ofxGuiGroup {
     
-public:
-    void disableHeader();
+//public:
+//    void disableHeader();
     
-};
+//};

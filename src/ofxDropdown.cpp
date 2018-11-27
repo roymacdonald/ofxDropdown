@@ -11,11 +11,18 @@
 #include "ofGraphics.h"
 #include "ofxGui.h"
 
-template<class T>
-ofParameter<bool> ofxDropdown_<T>::bCollapseOnSelection = ofParameter<bool>("Collapse On Selection", false);
-template<class T>
-ofParameter<bool> ofxDropdown_<T>::bMultiselection = ofParameter<bool>("Multiselection",false);
 
+//avoid deinitialization fiasco
+template<class T>
+ofParameter<bool> & ofxDropdown_<T>::getMultiSelectionParameter(){
+	static ofParameter<bool> * p = new ofParameter<bool>("Multiselection",false);
+	return *p;
+}
+template<class T>
+ofParameter<bool> & ofxDropdown_<T>::getCollapseOnSelectionParameter(){
+	static ofParameter<bool> * p = new ofParameter<bool>("Collapse On Selection", false);
+	return *p;
+}
 
 //--------------------------------------------------------------
 template<class T>
@@ -75,17 +82,17 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 				}
 			}
 			if(foundIndex >= 0){
-				if(!bMultiselection){
+				if(!getMultiSelectionParameter()){
 					disableSiblings(&group, group.getControl(foundIndex));
 				}
 //				for(int i = 0; i <g.size(); i++){
 //					if(foundIndex != i){
-//						auto * dd = dynamic_cast <ofxDropdown_ *>(group.getControl(i));
+//						auto * dd = std::dynamic_pointer_cast <ofxDropdown_ *>(group.getControl(i));
 //						if(dd){
 //							dd->hideDropdown();
 //						}else{
 //
-//							disableElement(dynamic_cast <ofxDropdownOption *>(group.getControl(i)));
+//							disableElement(std::dynamic_pointer_cast <ofxDropdownOption *>(group.getControl(i)));
 //						}
 //					}
 //				}
@@ -96,7 +103,7 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 				ofNotifyEvent(change_E, options[index], this);
 				//std::cout << "ofxDropdown_::groupChanged(...) sender " << selectedValue << std::endl;
 			}
-			if(bCollapseOnSelection){
+			if(getCollapseOnSelectionParameter()){
 				hideDropdown("groupChanged");
 			}
 			
@@ -109,16 +116,17 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 
 }
 //--------------------------------------------------------------
-template<class T>
-ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value) {
-    return add(value, ofToString(value));
-}
+//template<class T>
+//ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value) {
+//    return add(value, ofToString(value));
+//}
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
     options.push_back(option);
     values.push_back(value);
     
-    auto o = new ofxDropdownOption();
+//    auto o = make_shared<ofxDropdownOption>();
+	auto o = new ofxDropdownOption();
     o->setup(option, value == selectedValue.get());
     groupListeners.push(o->getParameter().cast<bool>().newListener(this, &ofxDropdown_::groupChanged));
     
@@ -142,7 +150,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const map<T,string> & options){
 }
 //--------------------------------------------------------------
 template<class T>
-ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_* dd){
+ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_ * dd){
 	if(dd){
 		group.add(dd);
 		childDropdowns.push_back(dd);
@@ -155,7 +163,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_* dd){
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(std::string name){
-	return addDropdown(new ofxDropdown_(name, getWidth(), getHeight()));
+	return addDropdown(new ofxDropdown_<T>(name, getWidth(), getHeight()));
 }
 //--------------------------------------------------------------
 template<class T>
@@ -221,12 +229,12 @@ void ofxDropdown_<T>::showDropdown(bool bDisableSiblings){
 
 //--------------------------------------------------------------
 template<class T>
-void ofxDropdown_<T>::disableSiblings(ofxBaseGui* parent, ofxBaseGui * child){
+void ofxDropdown_<T>::disableSiblings(ofxBaseGui * parent, ofxBaseGui * child){
 	if(parent != nullptr){
-		auto* p = dynamic_cast<ofxGuiGroup *>(parent);
+		auto p = dynamic_cast<ofxGuiGroup*>(parent);
 		if(p){
 			for(int i = 0; i < p->getNumControls(); i++ ){
-				auto * dd = dynamic_cast <ofxDropdown_ *>(p->getControl(i));
+				auto* dd = dynamic_cast <ofxDropdown_*>(p->getControl(i));
 				if(dd && dd != child){
 					dd->hideDropdown("disableSiblings",false);
 				}else{
@@ -377,32 +385,32 @@ ofAbstractParameter & ofxDropdown_<T>::getParameter(){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::enableCollapseOnSelection(){
-	bCollapseOnSelection = true;
+	getCollapseOnSelectionParameter() = true;
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::disableCollapseOnSelection(){
-	bCollapseOnSelection = false;
+	getCollapseOnSelectionParameter() = false;
 }
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::isEnabledCollapseOnSelection(){
-	return bCollapseOnSelection;
+	return getCollapseOnSelectionParameter();
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::enableMultipleSelection(){
-	bMultiselection = true;
+	getMultiSelectionParameter() = true;
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::disableMultipleSelection(){
-	bMultiselection = false;
+	getMultiSelectionParameter() = false;
 }
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::isEnabledMultipleSelection(){
-	return bMultiselection;
+	return getMultiSelectionParameter();
 }
 //--------------------------------------------------------------
 template<class T>
@@ -427,6 +435,6 @@ bool ofxDropdown_<T>::setValue(float mx, float my, bool bCheck){
     return false;
 }
 
-
+//template class ofxDropdown_<ofFile>;
 template class ofxDropdown_<string>;
 template class ofxDropdown_<int>;
