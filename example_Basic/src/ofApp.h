@@ -23,14 +23,13 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 	
 	
-//	ofxPanel gui;
-	ofxGuiGroup gui;
+	ofxPanel gui;
+//	ofxGuiGroup gui;
 	
-	ofParameter<void> paramVoid;
-	ofParameter<bool> paramBool;
+	
 	ofParameter<string> options, options2;
 
-//	vector<ofParameter<void>> voids;
+
 	ofxDropdown *dd;
 	
 	
