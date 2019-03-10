@@ -6,8 +6,9 @@ void ofApp::setup(){
 	gui.setup();
 	gui.setPosition(20,20);
 	
-	gui.add(ofxDropdown::getMultiSelectionParameter());
-	gui.add(ofxDropdown::getCollapseOnSelectionParameter());
+	dropdown =  make_unique<ofxDropdown>("Dropdown");
+	gui.add(dropdown->getMultiSelectionParameter());
+	gui.add(dropdown->getCollapseOnSelectionParameter());
 	
 	
 	options.setName("Options");
@@ -17,19 +18,20 @@ void ofApp::setup(){
 	
 	
 	
-	for(int i = 0; i < 15; i++){
-		ofxDropdown* dd2 = new ofxDropdown("Options" + ofToString(i));
-		for(int j = 0; j < 5; j++){
-			dd2->add(ofToString(i)+"_"+string(1, j+'A'));
-		}
-		if(i == 0){
-			gui.add(dd2);
-		}else{
-			dd->addDropdown(dd2);
-		}
-		if(i%3==0) dd = dd2;
-	}
 	
+	for(int i = 0; i < 15; i++){
+//		ofxDropdown* dd2 = new ofxDropdown("Options" + ofToString(i));
+		for(int j = 0; j < 5; j++){
+			dropdown->add(ofToString(i)+"_"+string(1, j+'A'));
+		}
+//		if(i == 0){
+//			gui.add(dd2);
+//		}else{
+//			dropdown->addDropdown(dd2);
+//		}
+//		if(i%3==0) dropdown = dd2;
+	}
+	gui.add(dropdown.get());
 	
 	
 }

@@ -30,7 +30,7 @@ class ofApp : public ofBaseApp{
 	ofParameter<string> options, options2;
 
 
-	ofxDropdown *dd;
+	unique_ptr<ofxDropdown> dropdown;
 	
 	
 };
