@@ -10,13 +10,10 @@
 
 
 #include "ofParameter.h"
-#include "ofxBaseGui.h"
+#include "ofxGuiGroup.h"
 
 #include "ofxDropdownOption.hpp"
-#include "ofxDropdownOptions.hpp"
 
-
-#define USAR_MOUSE_RELEASED
 
 using namespace std;
 
@@ -32,15 +29,16 @@ public:
 	ofxDropdown_ * setup(std::string name, float width = defaultWidth, float height = defaultHeight);
 //	std::ofxDropdown_ * setup(const std::string& name, const std::vector<std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
 	
-	static void enableCollapseOnSelection();
-	static void disableCollapseOnSelection();
-	static bool isEnabledCollapseOnSelection();
-	static ofParameter<bool> & getCollapseOnSelectionParameter();//this can be added to a gui
+	void enableCollapseOnSelection(bool bPropagateToChildren = true);
+	void disableCollapseOnSelection(bool bPropagateToChildren = true);
+	bool isEnabledCollapseOnSelection();
+	ofParameter<bool> & getCollapseOnSelectionParameter();//this can be added to a gui
 	
-	static void enableMultipleSelection();
-	static void disableMultipleSelection();
-	static bool isEnabledMultipleSelection();
-	static ofParameter<bool> & getMultiSelectionParameter();//this can be added to a gui
+	
+	void enableMultipleSelection(bool bPropagateToChildren = true);
+	void disableMultipleSelection(bool bPropagateToChildren = true);
+	bool isEnabledMultipleSelection();
+	ofParameter<bool> & getMultiSelectionParameter();//this can be added to a gui
 	
 	template<typename P>
 	typename std::enable_if<std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
@@ -55,6 +53,7 @@ public:
     ofxDropdown_ * add(const T& value, const string& option);
 	ofxDropdown_ * add(const std::vector<T> & options);
     ofxDropdown_ * add(const std::map<T, std::string> & options);
+	ofxDropdown_ * addDropdown(ofxDropdown_& dd);
 	ofxDropdown_ * addDropdown(ofxDropdown_* dd);
 	ofxDropdown_ * newDropdown(std::string name);
 	ofxDropdown_ * newDropdown(ofParameter<T> param);
@@ -104,8 +103,8 @@ public:
 	
 protected:
 	
-//	ofParameter<bool> bCollapseOnSelection;// = false;
-//	ofParameter<bool> bMultiselection;// = false;
+	ofParameter<bool> bCollapseOnSelection;// = false;
+	ofParameter<bool> bMultiselection;// = false;
 	
 	
 	virtual bool setValue(float mx, float my, bool bCheck) override;
@@ -136,12 +135,16 @@ protected:
 	
 	void childDropdownHidden(const void * sender, std::string&);
 	
-	ofxDropdownOptions group;
+	ofxGuiGroup group;
 	ofEventListeners groupListeners;
 	ofEventListeners childDropdownListeners;
 	
 	ofEventListener buttonListener;
 	ofPath arrow;
+	ofVboMesh optionTextMesh;
+	
+	std::string selectedOption;
+	
 private:
 	
 	std::vector<ofxDropdown_ *> childDropdowns;

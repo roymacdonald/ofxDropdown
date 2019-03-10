@@ -15,13 +15,15 @@
 //avoid deinitialization fiasco
 template<class T>
 ofParameter<bool> & ofxDropdown_<T>::getMultiSelectionParameter(){
-	static ofParameter<bool> * p = new ofParameter<bool>("Multiselection",false);
-	return *p;
+//	static ofParameter<bool> * p = new ofParameter<bool>("Multiselection",false);
+//	return *p;
+	return bMultiselection;// = fal
 }
 template<class T>
 ofParameter<bool> & ofxDropdown_<T>::getCollapseOnSelectionParameter(){
-	static ofParameter<bool> * p = new ofParameter<bool>("Collapse On Selection", false);
-	return *p;
+	return bCollapseOnSelection;// 
+//	static ofParameter<bool> * p = new ofParameter<bool>("Collapse On Selection", false);
+//	return *p;
 }
 
 //--------------------------------------------------------------
@@ -42,6 +44,10 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	group.setParent(this);
 	group.unregisterMouseEvents();
 
+	bMultiselection.set("MultiSelection", false);
+	bCollapseOnSelection.set("Collapse On Selection", true);
+	
+	
 	return this;
 }
 //--------------------------------------------------------------
@@ -82,7 +88,7 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 				}
 			}
 			if(foundIndex >= 0){
-				if(!getMultiSelectionParameter()){
+				if(!bMultiselection){
 					disableSiblings(&group, group.getControl(foundIndex));
 				}
 //				for(int i = 0; i <g.size(); i++){
@@ -96,14 +102,15 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 //						}
 //					}
 //				}
-				auto selectedOption = g.getVoid(foundIndex).getName();
+				selectedOption = g.getVoid(foundIndex).getName();
                 auto it = find(options.begin(), options.end(), selectedOption);
                 int index = std::distance(options.begin(), it);
 				selectedValue = values[index];
+				
 				ofNotifyEvent(change_E, options[index], this);
 				//std::cout << "ofxDropdown_::groupChanged(...) sender " << selectedValue << std::endl;
 			}
-			if(getCollapseOnSelectionParameter()){
+			if(bCollapseOnSelection){
 				hideDropdown("groupChanged");
 			}
 			
@@ -127,10 +134,13 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
     
 //    auto o = make_shared<ofxDropdownOption>();
 	auto o = new ofxDropdownOption();
-    o->setup(option, value == selectedValue.get());
+    o->setup(option, value == selectedValue.get());	
     groupListeners.push(o->getParameter().cast<bool>().newListener(this, &ofxDropdown_::groupChanged));
     
     group.add(o);
+//	if(value == selectedValue.get()){
+//		setNeedsRedraw();
+//	}
     return this;
 }
 //--------------------------------------------------------------
@@ -147,6 +157,11 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const map<T,string> & options){
         add(option.first, option.second);
     }
     return this;
+}
+//--------------------------------------------------------------
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_& dd){
+	addDropdown(&dd);
 }
 //--------------------------------------------------------------
 template<class T>
@@ -366,6 +381,10 @@ void ofxDropdown_<T>::generateDraw(){
 	arrow.moveTo(x2 - h /2,  y  + textPadding);
 	arrow.lineTo(x2 - textPadding,  y  + h/2 );
 	arrow.lineTo(x2 - h /2,  y  + h - textPadding);
+	
+	
+	optionTextMesh = getTextMesh(selectedOption, x2 - h /2 - getTextBoundingBox(selectedOption, 0, 0).width - textPadding , getTextVCenteredInRect(b));
+	
 }
 //--------------------------------------------------------------
 template<class T>
@@ -375,6 +394,13 @@ void ofxDropdown_<T>::render(){
 		group.draw();
 	}
 	arrow.draw();
+	
+	ofSetColor(thisTextColor, 200);
+	
+	bindFontTexture();
+	optionTextMesh.draw();
+	unbindFontTexture();
+	
 }
 //--------------------------------------------------------------
 template<class T>
@@ -384,33 +410,61 @@ ofAbstractParameter & ofxDropdown_<T>::getParameter(){
 
 //--------------------------------------------------------------
 template<class T>
-void ofxDropdown_<T>::enableCollapseOnSelection(){
-	getCollapseOnSelectionParameter() = true;
+void ofxDropdown_<T>::enableCollapseOnSelection(bool bPropagateToChildren){
+//	getCollapseOnSelectionParameter() = true;
+	bCollapseOnSelection = true;// 
+	if(bPropagateToChildren){
+		for(auto& c: childDropdowns){
+			c->enableCollapseOnSelection();
+		}
+	} 
+	
 }
 //--------------------------------------------------------------
 template<class T>
-void ofxDropdown_<T>::disableCollapseOnSelection(){
-	getCollapseOnSelectionParameter() = false;
+void ofxDropdown_<T>::disableCollapseOnSelection(bool bPropagateToChildren){
+	bCollapseOnSelection = false;
+//	bCollapseOnSelection = true;// 
+	if(bPropagateToChildren){
+		for(auto& c: childDropdowns){
+			c->disableCollapseOnSelection();
+		}
+	} 
+	
+	
 }
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::isEnabledCollapseOnSelection(){
-	return getCollapseOnSelectionParameter();
+	return bCollapseOnSelection;
+//	return getCollapseOnSelectionParameter();	
 }
 //--------------------------------------------------------------
 template<class T>
-void ofxDropdown_<T>::enableMultipleSelection(){
-	getMultiSelectionParameter() = true;
+void ofxDropdown_<T>::enableMultipleSelection(bool bPropagateToChildren){
+	bMultiselection = true;
+	if(bPropagateToChildren){
+		for(auto& c: childDropdowns){
+			c->enableMultipleSelection();
+		}
+	} 
 }
 //--------------------------------------------------------------
 template<class T>
-void ofxDropdown_<T>::disableMultipleSelection(){
-	getMultiSelectionParameter() = false;
+void ofxDropdown_<T>::disableMultipleSelection(bool bPropagateToChildren){
+	bMultiselection = false;
+	if(bPropagateToChildren){
+		for(auto& c: childDropdowns){
+			c->disableMultipleSelection();
+		}
+	}
+	//getMultiSelectionParameter() = false;
 }
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::isEnabledMultipleSelection(){
-	return getMultiSelectionParameter();
+	return bMultiselection;
+//	return getMultiSelectionParameter();
 }
 //--------------------------------------------------------------
 template<class T>
