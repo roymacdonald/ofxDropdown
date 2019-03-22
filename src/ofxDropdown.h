@@ -98,7 +98,7 @@ public:
 	void showDropdown(bool bDisableSiblings = true);
 	void hideDropdown(std::string caller, bool bNotifyEvent = true);
 	
-	
+    ofParameterGroup& getDropdownParameters();
 	
 	
 protected:
@@ -106,6 +106,7 @@ protected:
 	ofParameter<bool> bCollapseOnSelection;// = false;
 	ofParameter<bool> bMultiselection;// = false;
 	
+    ofParameterGroup dropdownParams;
 	
 	virtual bool setValue(float mx, float my, bool bCheck) override;
 	
@@ -124,22 +125,28 @@ protected:
 	vector<string> options;
     vector<T> values;
 	
-	ofParameter<T> selectedValue;
+    ofParameter<T> selectedValue;
 	
 	void groupChanged( const void * sender,bool&);
 	bool bGroupEnabled = false;
 	
-	void valueChanged(T & value);
+//    void valueChanged(T & value);
 
 	void buttonClicked(bool &);
 	
 	void childDropdownHidden(const void * sender, std::string&);
 	
+    
+//    void setSelectedValue(T & newvalue);
+    
+    
 	ofxGuiGroup group;
 	ofEventListeners groupListeners;
 	ofEventListeners childDropdownListeners;
 	
 	ofEventListener buttonListener;
+    ofEventListener setlectedValueListener;
+    
 	ofPath arrow;
 	ofVboMesh optionTextMesh;
 	

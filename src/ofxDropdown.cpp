@@ -12,20 +12,21 @@
 #include "ofxGui.h"
 
 
-//avoid deinitialization fiasco
+//--------------------------------------------------------------
 template<class T>
 ofParameter<bool> & ofxDropdown_<T>::getMultiSelectionParameter(){
-//	static ofParameter<bool> * p = new ofParameter<bool>("Multiselection",false);
-//	return *p;
-	return bMultiselection;// = fal
+	return bMultiselection;
 }
+//--------------------------------------------------------------
 template<class T>
 ofParameter<bool> & ofxDropdown_<T>::getCollapseOnSelectionParameter(){
-	return bCollapseOnSelection;// 
-//	static ofParameter<bool> * p = new ofParameter<bool>("Collapse On Selection", false);
-//	return *p;
+	return bCollapseOnSelection;
 }
 
+template<class T>
+ofParameterGroup& ofxDropdown_<T>::getDropdownParameters(){
+    return dropdownParams;
+}
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T>::ofxDropdown_(std::string name, float width, float height){
@@ -39,13 +40,15 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	buttonListener = value.newListener(this,&ofxDropdown_::buttonClicked);
 
 	selectedValue.setName(name);
+    
 	group.setup();
 	group.disableHeader();
 	group.setParent(this);
 	group.unregisterMouseEvents();
 
-	bMultiselection.set("MultiSelection", false);
-	bCollapseOnSelection.set("Collapse On Selection", true);
+    dropdownParams.setName(name + " params");
+	dropdownParams.add(bMultiselection.set("MultiSelection", false));
+	dropdownParams.add(bCollapseOnSelection.set("Collapse On Selection", true));
 	
 	
 	return this;
@@ -64,10 +67,19 @@ ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDow
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, float height){
 	selectedValue.makeReferenceTo(param);
-	
+    //setlectedValueListener = selectedValue.newListener(this, &ofxDropdown_<T>::setSelectedValue);
 	return setup(param.getName(), width, height);
-
 }
+//--------------------------------------------------------------
+//template<class T>
+//void ofxDropdown_<T>::setSelectedValue(T & newvalue){
+//    if(selectedValue.get() != newvalue){
+//        selectedValue = newvalue;
+//
+//        ofNotifyEvent(change_E, options[index], this);
+//        //std::cout << "ofxDropdown_::groupChanged(...) sender " << selectedValue << std::endl;
+//    }
+//}
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
