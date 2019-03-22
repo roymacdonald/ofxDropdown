@@ -27,10 +27,10 @@ class ofApp : public ofBaseApp{
 //	ofxGuiGroup gui;
 	
 	
-	ofParameter<string> options, options2;
+    ofParameter<string> options;//, options2;
+    ofParameter<int> intOptions;
 
-
-	unique_ptr<ofxDropdown> dropdown;
-	
+	unique_ptr<ofxDropdown> strDropdown;
+    unique_ptr<ofxIntDropdown> intDropdown;
 	
 };

@@ -6,13 +6,23 @@ void ofApp::setup(){
 	gui.setup();
 	gui.setPosition(20,20);
 	
-	dropdown =  make_unique<ofxDropdown>("Dropdown");
-	gui.add(dropdown->getMultiSelectionParameter());
-	gui.add(dropdown->getCollapseOnSelectionParameter());
+	strDropdown =  make_unique<ofxDropdown>("Str Dropdown");
+      gui.add(strDropdown->getDropdownParameters());
+//    gui.add(strDropdown->getMultiSelectionParameter());
+//    gui.add(strDropdown->getCollapseOnSelectionParameter());
+	
+    intOptions.setName("INT Options");
+    intDropdown =  make_unique<ofxIntDropdown>(intOptions);
+    gui.add(intDropdown->getDropdownParameters());
+//    gui.add(intDropdown->getMultiSelectionParameter());
+//    gui.add(intDropdown->getCollapseOnSelectionParameter());
 	
 	
-	options.setName("Options");
+	options.setName("STR Options");
 
+    
+    
+    
 	ofSetWindowPosition(0, 0);
 	ofSetWindowShape(ofGetScreenWidth(), 500);
 	
@@ -22,17 +32,20 @@ void ofApp::setup(){
 	for(int i = 0; i < 15; i++){
 //		ofxDropdown* dd2 = new ofxDropdown("Options" + ofToString(i));
 		for(int j = 0; j < 5; j++){
-			dropdown->add(ofToString(i)+"_"+string(1, j+'A'));
+			strDropdown->add(ofToString(i)+"_"+string(1, j+'A'));
 		}
 //		if(i == 0){
 //			gui.add(dd2);
 //		}else{
-//			dropdown->addDropdown(dd2);
+//			strDropdown->addDropdown(dd2);
 //		}
-//		if(i%3==0) dropdown = dd2;
+//		if(i%3==0) strDropdown = dd2;
 	}
-	gui.add(dropdown.get());
-	
+    for(int i = 0; i < 15; i++){
+            intDropdown->add(i, "Opcion " + ofToString(i));
+    }
+	gui.add(strDropdown.get());
+    gui.add(intDropdown.get());
 	
 }
 
@@ -45,6 +58,8 @@ void ofApp::update(){
 void ofApp::draw(){
 	gui.draw();
 	
+    ofDrawBitmapStringHighlight(ofToString(intOptions.get()), 20, ofGetHeight() - 50);
+    
 }
 
 //--------------------------------------------------------------
@@ -54,7 +69,9 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-
+    if(key >= '0' && key <= '9'){
+        intOptions = key - '0';
+    }
 }
 
 //--------------------------------------------------------------
