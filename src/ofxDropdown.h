@@ -93,7 +93,7 @@ public:
 	
 	ofEvent<std::string> change_E;
 	ofEvent<std::string> dropdownHidden_E;
-	
+    ofEvent<void> dropdownWillShow_E;
 	
 	void showDropdown(bool bDisableSiblings = true);
 	void hideDropdown(std::string caller, bool bNotifyEvent = true);

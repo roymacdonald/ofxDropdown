@@ -233,6 +233,7 @@ string ofxDropdown_<T>::getOptionAt(size_t index){
 template<class T>
 void ofxDropdown_<T>::showDropdown(bool bDisableSiblings){
 	if(!bGroupEnabled){
+        ofNotifyEvent(dropdownWillShow_E, this);
 		bGroupEnabled = true;
 		switch(dropDownPosition){
 			case DD_BELOW:
