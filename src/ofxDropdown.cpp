@@ -30,7 +30,7 @@ ofParameterGroup& ofxDropdown_<T>::getDropdownParameters(){
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T>::ofxDropdown_(std::string name, float width, float height){
-	return setup(name, width, height);
+	setup(name, width, height);
 }
 //--------------------------------------------------------------
 template<class T>
@@ -174,6 +174,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const map<T,string> & options){
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_& dd){
 	addDropdown(&dd);
+	return 0;
 }
 //--------------------------------------------------------------
 template<class T>
