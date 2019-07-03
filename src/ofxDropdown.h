@@ -101,6 +101,13 @@ public:
     ofParameterGroup& getDropdownParameters();
 	
 	
+	ofParameter<T> selectedValue;
+	
+	
+	void forceRedraw(){
+		setNeedsRedraw();
+	}
+	
 protected:
 	
 	ofParameter<bool> bCollapseOnSelection;// = false;
@@ -125,7 +132,7 @@ protected:
 	vector<string> options;
     vector<T> values;
 	
-    ofParameter<T> selectedValue;
+	
 	
 	void groupChanged( const void * sender,bool&);
 	bool bGroupEnabled = false;
@@ -137,8 +144,12 @@ protected:
 	void childDropdownHidden(const void * sender, std::string&);
 	
     
-//    void setSelectedValue(T & newvalue);
-    
+	void setSelectedValueByName( const std::string& valueName, bool bNotify);
+	void setSelectedValueByIndex( const size_t& index, bool bNotify);
+	void selectedValueChanged(T & newvalue);
+	
+	
+	
     
 	ofxGuiGroup group;
 	ofEventListeners groupListeners;

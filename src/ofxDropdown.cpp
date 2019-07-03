@@ -40,7 +40,8 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	buttonListener = value.newListener(this,&ofxDropdown_::buttonClicked);
 
 	selectedValue.setName(name);
-    
+	setlectedValueListener = selectedValue.newListener(this, &ofxDropdown_<T>::selectedValueChanged);
+	
 	group.setup();
 	group.disableHeader();
 	group.setParent(this);
@@ -67,19 +68,51 @@ ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDow
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, float height){
 	selectedValue.makeReferenceTo(param);
-    //setlectedValueListener = selectedValue.newListener(this, &ofxDropdown_<T>::setSelectedValue);
 	return setup(param.getName(), width, height);
 }
 //--------------------------------------------------------------
-//template<class T>
-//void ofxDropdown_<T>::setSelectedValue(T & newvalue){
-//    if(selectedValue.get() != newvalue){
-//        selectedValue = newvalue;
-//
-//        ofNotifyEvent(change_E, options[index], this);
-//        //std::cout << "ofxDropdown_::groupChanged(...) sender " << selectedValue << std::endl;
-//    }
-//}
+template<class T>
+void ofxDropdown_<T>::selectedValueChanged(T & newvalue){
+//	std::cout << "ofxDropdown_<T>::selectedValueChanged: "<< getName() << "  " << newvalue << std::endl;
+
+	auto it = find(values.begin(), values.end(), newvalue);
+	if(it != values.end()){// it was found. it should be found anyways but better to double check
+		auto index = std::distance(values.begin(), it);
+		setSelectedValueByIndex(index, true);
+	}
+	setNeedsRedraw();
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify){
+//	std::cout << "ofxDropdown_<T>::setSelectedValueByIndex  " << getName() << "  " << index << std::endl;
+	if(index < values.size()){
+		selectedValue = values[index];
+		selectedOption = options[index];
+		if(!bMultiselection){
+			auto control = group.getControl(options[index]);
+			if(control != nullptr){
+				disableSiblings(&group,control);
+			}
+		}
+		if(bCollapseOnSelection){
+			hideDropdown("setSelectedValueByName");
+		}
+		if(bNotify) ofNotifyEvent(change_E, options[index], this);
+	}
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::setSelectedValueByName( const std::string& valueName, bool bNotify){
+//	std::cout << " ofxDropdown_<T>::setSelectedValueByName  "<< getName() << "  " << valueName << std::endl;
+
+		auto it = find(options.begin(), options.end(), valueName);
+		if(it != options.end()){// it was found. it should be found anyways but better to double check
+			auto index = std::distance(options.begin(), it);
+			setSelectedValueByIndex(index, bNotify);
+		}
+	
+}
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
@@ -91,7 +124,7 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 
 			auto& g = group.getParameter().castGroup(); 
 					
-			int foundIndex = -1; 
+			int foundIndex = -1;           
 			for(int i = 0; i <g.size(); i++){
 				//			std::cout <<  i  << "  -  ";
 				if(g.getBool(i).getInternalObject() == ((ofParameter<bool> *)(sender))->getInternalObject()){
@@ -100,29 +133,8 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 				}
 			}
 			if(foundIndex >= 0){
-				if(!bMultiselection){
-					disableSiblings(&group, group.getControl(foundIndex));
-				}
-//				for(int i = 0; i <g.size(); i++){
-//					if(foundIndex != i){
-//						auto * dd = std::dynamic_pointer_cast <ofxDropdown_ *>(group.getControl(i));
-//						if(dd){
-//							dd->hideDropdown();
-//						}else{
-//
-//							disableElement(std::dynamic_pointer_cast <ofxDropdownOption *>(group.getControl(i)));
-//						}
-//					}
-//				}
-				selectedOption = g.getVoid(foundIndex).getName();
-                auto it = find(options.begin(), options.end(), selectedOption);
-                int index = std::distance(options.begin(), it);
-				selectedValue = values[index];
-				
-				ofNotifyEvent(change_E, options[index], this);
-				//std::cout << "ofxDropdown_::groupChanged(...) sender " << selectedValue << std::endl;
-			}
-			if(bCollapseOnSelection){
+				setSelectedValueByName(g.getVoid(foundIndex).getName(), true);
+			}else if(bCollapseOnSelection){
 				hideDropdown("groupChanged");
 			}
 			
@@ -201,7 +213,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(ofParameter<T> param){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::childDropdownHidden(const void * sender, std::string& s){
-	std::cout << "childDropdownHidden callback: "<< getName() << ". eventParam: " << s << std::endl;
+//	std::cout << "childDropdownHidden callback: "<< getName() << ". eventParam: " << s << std::endl;
 //	auto& g = group.getParameter().castGroup(); 
 	
 //	int foundIndex = -1; 
@@ -397,6 +409,7 @@ void ofxDropdown_<T>::generateDraw(){
 	arrow.lineTo(x2 - h /2,  y  + h - textPadding);
 	
 	
+	std::cout << " ofxDropdown_<T>::generateDraw()  " << selectedOption << endl;
 	optionTextMesh = getTextMesh(selectedOption, x2 - h /2 - getTextBoundingBox(selectedOption, 0, 0).width - textPadding , getTextVCenteredInRect(b));
 	
 }
