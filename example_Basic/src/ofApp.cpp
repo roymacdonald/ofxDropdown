@@ -3,10 +3,10 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	
-	gui.setup();
+	gui.setup("DROPDOWNS", "DropdownsSettings.xml");
 	gui.setPosition(20,20);
 	
-	strDropdown =  make_unique<ofxDropdown>("Str Dropdown");
+	strDropdown =  make_unique<ofxDropdown>("String Dropdown");
       gui.add(strDropdown->getDropdownParameters());
 //    gui.add(strDropdown->getMultiSelectionParameter());
 //    gui.add(strDropdown->getCollapseOnSelectionParameter());
@@ -24,7 +24,7 @@ void ofApp::setup(){
     
     
 	ofSetWindowPosition(0, 0);
-	ofSetWindowShape(ofGetScreenWidth(), 500);
+//	ofSetWindowShape(ofGetScreenWidth(), 500);
 	
 	
 	
@@ -71,9 +71,15 @@ void ofApp::keyPressed(int key){
 void ofApp::keyReleased(int key){
     if(key >= '0' && key <= '9'){
         intOptions = key - '0';
-    }
+	}else if(key == 's'){
+		gui.saveToFile("DropdownsSettings.xml");
+	}else if(key == 'l'){
+		gui.loadFromFile("DropdownsSettings.xml");
+		cout << "strDropdown.selectedValue" << strDropdown->selectedValue << endl;
+	}else if(key == ' '){
+		strDropdown->forceRedraw();
+	}
 }
-
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
 
