@@ -75,9 +75,6 @@ void ofApp::keyReleased(int key){
 		gui.saveToFile("DropdownsSettings.xml");
 	}else if(key == 'l'){
 		gui.loadFromFile("DropdownsSettings.xml");
-		cout << "strDropdown.selectedValue" << strDropdown->selectedValue << endl;
-	}else if(key == ' '){
-		strDropdown->forceRedraw();
 	}
 }
 //--------------------------------------------------------------
