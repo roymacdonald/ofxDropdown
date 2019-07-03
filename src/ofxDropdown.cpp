@@ -73,19 +73,23 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, floa
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::selectedValueChanged(T & newvalue){
-//	std::cout << "ofxDropdown_<T>::selectedValueChanged: "<< getName() << "  " << newvalue << std::endl;
-
 	auto it = find(values.begin(), values.end(), newvalue);
 	if(it != values.end()){// it was found. it should be found anyways but better to double check
 		auto index = std::distance(values.begin(), it);
 		setSelectedValueByIndex(index, true);
+		
+		
+		auto element = dynamic_cast <ofxDropdownOption *>(group.getControl(options[index]));
+		if(element){
+			element->enableElement();
+		}
+		setNeedsRedraw();
 	}
-	setNeedsRedraw();
+	
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify){
-//	std::cout << "ofxDropdown_<T>::setSelectedValueByIndex  " << getName() << "  " << index << std::endl;
 	if(index < values.size()){
 		selectedValue = values[index];
 		selectedOption = options[index];
@@ -104,7 +108,6 @@ void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::setSelectedValueByName( const std::string& valueName, bool bNotify){
-//	std::cout << " ofxDropdown_<T>::setSelectedValueByName  "<< getName() << "  " << valueName << std::endl;
 
 		auto it = find(options.begin(), options.end(), valueName);
 		if(it != options.end()){// it was found. it should be found anyways but better to double check
@@ -119,7 +122,7 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 	if(b){
 	if(sender){
 		if(!bGroupEnabled){
-			std::cout << "ofxDropdown_::groupChanged(...) bGroupEnabled == false" << std::endl;
+			ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
 		}else{
 
 			auto& g = group.getParameter().castGroup(); 
@@ -140,7 +143,7 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 			
 		}
 	}else{
-		std::cout << "ofxDropdown_::groupChanged(...) sender = null" << std::endl;
+		ofLogVerbose("ofxDropdown_::groupChanged(...)")  << "sender = null";
 	}
 
 }
@@ -213,19 +216,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(ofParameter<T> param){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::childDropdownHidden(const void * sender, std::string& s){
-//	std::cout << "childDropdownHidden callback: "<< getName() << ". eventParam: " << s << std::endl;
-//	auto& g = group.getParameter().castGroup(); 
-	
-//	int foundIndex = -1; 
-//	for(auto * c: childDropdowns){
-//		if(c == ((ofxDropdown_ *)(sender))){
-//			
-//		}
-//	}
-
-//	if(childDropdowns.size() == 1){
-		hideDropdown("childDropdownHidden");
-//	}
+	hideDropdown("childDropdownHidden");
 }
 //--------------------------------------------------------------
 template<class T>
@@ -279,8 +270,13 @@ void ofxDropdown_<T>::disableSiblings(ofxBaseGui * parent, ofxBaseGui * child){
 				if(dd && dd != child){
 					dd->hideDropdown("disableSiblings",false);
 				}else{
+					auto element = dynamic_cast <ofxDropdownOption *>(p->getControl(i));
 					if(child != p->getControl(i)){
-						disableElement(dynamic_cast <ofxDropdownOption *>(p->getControl(i)), true);
+						disableElement(element, true);
+					}else{
+						if(element){
+							element->enableElement();
+						}
 					}
 				}
 			}
@@ -363,7 +359,6 @@ bool ofxDropdown_<T>::mouseScrolled(ofMouseEventArgs & args){
 template<class T>
 void ofxDropdown_<T>::hideDropdown(std::string caller, bool bNotifyEvent){
 	if(bGroupEnabled){
-		//std::cout << caller << "  hiding dropdown: "<< getName() << ". notify: " << (bNotifyEvent?"TRUE":"FALSE") << std::endl;
 		bGroupEnabled = false;
 		auto n = value.getName();
 		disableElement(this);
@@ -408,8 +403,6 @@ void ofxDropdown_<T>::generateDraw(){
 	arrow.lineTo(x2 - textPadding,  y  + h/2 );
 	arrow.lineTo(x2 - h /2,  y  + h - textPadding);
 	
-	
-	std::cout << " ofxDropdown_<T>::generateDraw()  " << selectedOption << endl;
 	optionTextMesh = getTextMesh(selectedOption, x2 - h /2 - getTextBoundingBox(selectedOption, 0, 0).width - textPadding , getTextVCenteredInRect(b));
 	
 }
