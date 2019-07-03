@@ -5,6 +5,7 @@
 class ofxDropdownOption : public ofxToggle {
   
 public:
+	void enableElement();
     void disableElement();
     
 protected:

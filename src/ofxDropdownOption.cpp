@@ -1,5 +1,11 @@
 #include "ofxDropdownOption.hpp"
 
+void ofxDropdownOption::enableElement() {
+//	bGuiActive = false;
+	value.setWithoutEventNotifications(true);
+	setNeedsRedraw();
+}
+
 void ofxDropdownOption::disableElement() {
     bGuiActive = false;
     value.setWithoutEventNotifications(false);
