@@ -25,8 +25,11 @@ public:
 	ofxDropdown_(std::string name, float width = defaultWidth, float height = defaultHeight);
 	ofxDropdown_(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
     ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
+	ofxDropdown_(ofParameter<T> param, const std::vector<T> & dropDownOptions, float width = defaultWidth, float height = defaultHeight);
+	
 	ofxDropdown_ * setup(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
 	ofxDropdown_ * setup(std::string name, float width = defaultWidth, float height = defaultHeight);
+	
 //	std::ofxDropdown_ * setup(const std::string& name, const std::vector<std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
 	
 	void enableCollapseOnSelection(bool bPropagateToChildren = true);
@@ -104,9 +107,16 @@ public:
 	ofParameter<T> selectedValue;
 	
 	
+	virtual void registerMouseEvents() override;
+	virtual void unregisterMouseEvents() override;
+
+	
 	void forceRedraw(){
 		setNeedsRedraw();
 	}
+	
+	void setSelectedValueByName( const std::string& valueName, bool bNotify);
+	void setSelectedValueByIndex( const size_t& index, bool bNotify);
 	
 protected:
 	
@@ -144,8 +154,7 @@ protected:
 	void childDropdownHidden(const void * sender, std::string&);
 	
     
-	void setSelectedValueByName( const std::string& valueName, bool bNotify);
-	void setSelectedValueByIndex( const size_t& index, bool bNotify);
+
 	void selectedValueChanged(T & newvalue);
 	
 	

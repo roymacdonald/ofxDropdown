@@ -64,6 +64,11 @@ ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDow
     setup(param,width,height);
     add(dropDownOptions);
 }
+template<class T>
+ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const std::vector<T> & dropDownOptions, float width , float height){
+	setup(param,width,height);
+	add(dropDownOptions);
+}
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, float height){
@@ -507,6 +512,24 @@ bool ofxDropdown_<T>::setValue(float mx, float my, bool bCheck){
         return true;
     }
     return false;
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::registerMouseEvents(){
+	auto p = defaultEventsPriority;
+	defaultEventsPriority = ofEventOrder(defaultEventsPriority - 10);
+	ofxBaseGui::registerMouseEvents();
+	defaultEventsPriority = p;
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::unregisterMouseEvents(){
+	auto p = defaultEventsPriority;
+	defaultEventsPriority = ofEventOrder(defaultEventsPriority - 10);
+	ofxBaseGui::unregisterMouseEvents();
+	defaultEventsPriority = p;
 }
 
 //template class ofxDropdown_<ofFile>;
