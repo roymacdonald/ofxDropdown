@@ -36,7 +36,7 @@ ofxDropdown_<T>::ofxDropdown_(std::string name, float width, float height){
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float height ){
 
-	ofxToggle::setup(name, false , width, height);
+	ofxDropdownOption::setup(name, false , width, height);
 	buttonListener = value.newListener(this,&ofxDropdown_::buttonClicked);
 
 	selectedValue.setName(name);
@@ -48,9 +48,9 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	group.unregisterMouseEvents();
 
     dropdownParams.setName(name + " params");
-	dropdownParams.add(bMultiselection.set("MultiSelection", false));
-	dropdownParams.add(bCollapseOnSelection.set("Collapse On Selection", true));
-	
+	dropdownParams.add(bMultiselection);
+	dropdownParams.add(bCollapseOnSelection);
+	dropdownParams.add(bDisableChildrenRecursively);
 	
 	return this;
 }
@@ -105,7 +105,7 @@ void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify
 			}
 		}
 		if(bCollapseOnSelection){
-			hideDropdown("setSelectedValueByName");
+			hideDropdown();
 		}
 		if(bNotify) ofNotifyEvent(change_E, options[index], this);
 	}
@@ -126,6 +126,7 @@ template<class T>
 void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 	if(b){
 	if(sender){
+		
 		if(!bGroupEnabled){
 			ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
 		}else{
@@ -143,7 +144,7 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 			if(foundIndex >= 0){
 				setSelectedValueByName(g.getVoid(foundIndex).getName(), true);
 			}else if(bCollapseOnSelection){
-				hideDropdown("groupChanged");
+				hideDropdown();
 			}
 			
 		}
@@ -165,11 +166,19 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
     values.push_back(value);
     
 //    auto o = make_shared<ofxDropdownOption>();
-	auto o = new ofxDropdownOption();
-    o->setup(option, value == selectedValue.get());	
-    groupListeners.push(o->getParameter().cast<bool>().newListener(this, &ofxDropdown_::groupChanged));
+	
+	ownedChildren.push_back(std::move(make_unique<ofxDropdownOption>()));
+	auto o = ownedChildren.back().get();
+	if(o){
+		o->setup(option, value == selectedValue.get());
+		groupListeners.push(o->getParameter().template cast<bool>().newListener(this, &ofxDropdown_::groupChanged));
     
-    group.add(o);
+		group.add(o);
+	}else
+	{
+		ofLogError("ofxDropdown_<T>::add") << "created children is nullptr";
+	}
+	
 //	if(value == selectedValue.get()){
 //		setNeedsRedraw();
 //	}
@@ -200,6 +209,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_& dd){
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_ * dd){
 	if(dd){
+//		cout << typeid(dd).name() <<"\n";
 		group.add(dd);
 		childDropdowns.push_back(dd);
 		childDropdownListeners.push(dd->dropdownHidden_E.newListener(this, &ofxDropdown_::childDropdownHidden));
@@ -211,23 +221,41 @@ ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_ * dd){
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(std::string name){
-	return addDropdown(new ofxDropdown_<T>(name, getWidth(), getHeight()));
+//	auto dd = make_unique<ofxDropdown_<T>>(name, getWidth(), getHeight());
+	//ownedChildren.push_back(std::move(dd));
+//	cout<< "newDropdown: " << name << "\n";
+	ownedDropdowns.emplace_back(make_unique<ofxDropdown_<T>>(name, getWidth(), getHeight()));
+	auto dd = ownedDropdowns.back().get();
+	addDropdown(dd);
+	return dd;
 }
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(ofParameter<T> param){
-	return addDropdown(new ofxDropdown_(param, getWidth(), getHeight()));
+//	cout<< "newDropdown: " << param.getName() << "\n";
+	ownedDropdowns.emplace_back(make_unique<ofxDropdown_<T>>(param, getWidth(), getHeight()));
+	auto dd = ownedDropdowns.back().get();
+	addDropdown(dd);
+	return dd;
+//	auto dd = make_unique<ofxDropdown_<T>>(param, getWidth(), getHeight());
+//	ownedChildren.push_back(std::move(dd));
+//	addDropdown( static_cast<ofxDropdown_<T>*>(ownedChildren.back().get()));
+//	return dd.get();
+//
+	
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::childDropdownHidden(const void * sender, std::string& s){
-	hideDropdown("childDropdownHidden");
+	hideDropdown();
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::clear(){
 	group.clear();
 	childDropdowns.clear();
+	ownedChildren.clear();
+	ownedDropdowns.clear();
 }
 //--------------------------------------------------------------
 template<class T>
@@ -273,7 +301,7 @@ void ofxDropdown_<T>::disableSiblings(ofxBaseGui * parent, ofxBaseGui * child){
 			for(int i = 0; i < p->getNumControls(); i++ ){
 				auto* dd = dynamic_cast <ofxDropdown_*>(p->getControl(i));
 				if(dd && dd != child){
-					dd->hideDropdown("disableSiblings",false);
+					dd->hideDropdown(false);
 				}else{
 					auto element = dynamic_cast <ofxDropdownOption *>(p->getControl(i));
 					if(child != p->getControl(i)){
@@ -301,7 +329,7 @@ void ofxDropdown_<T>::disableElement(ofxDropdownOption* e, bool bCheckAgainstThi
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
-	if(ofxToggle::mouseReleased(args) || b.inside(args)){
+	if(ofxDropdownOption::mouseReleased(args) || b.inside(args)){
 		return true;
 	}
 	if(isShowingDropdown()){
@@ -309,7 +337,7 @@ bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
 			return true;
 		}
 		if(!b.inside(args)){
-			hideDropdown("mousePressed");
+			hideDropdown();
 			return true;
 		}
 	}
@@ -322,14 +350,19 @@ bool ofxDropdown_<T>::mousePressed(ofMouseEventArgs & args){
         return true;
     }
 	if(isShowingDropdown()){
-		return group.mousePressed(args);
+		bool r = group.mousePressed(args);;
+		if(!r)
+		{
+			hideDropdown();
+		}
+		return r;
 	}
 	return false;
 }
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
-	if(ofxToggle::mouseMoved(args)){
+	if(ofxDropdownOption::mouseMoved(args)){
 		return true;
 	}
 	if(isShowingDropdown()){
@@ -340,7 +373,7 @@ bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseDragged(ofMouseEventArgs & args){
-	if(ofxToggle::mouseDragged(args)){
+	if(ofxDropdownOption::mouseDragged(args)){
 		return true;
 	}
 	if(isShowingDropdown()){
@@ -351,18 +384,23 @@ bool ofxDropdown_<T>::mouseDragged(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseScrolled(ofMouseEventArgs & args){
-	if(ofxToggle::mouseScrolled(args)){
+	if(ofxDropdownOption::mouseScrolled(args)){
 		return true;
 	}
 	if(isShowingDropdown()){
-		return group.mouseScrolled(args);
+		if( !group.isMinimized() && group.getShape().inside(args.x, args.y)){
+			group.setPosition(group.getPosition() + glm::vec3(0, args.scrollY * 2, 0));
+			return true;
+		}else{
+			return group.mouseScrolled(args);
+		}
 	}
 	return false;
 }
 
 //--------------------------------------------------------------
 template<class T>
-void ofxDropdown_<T>::hideDropdown(std::string caller, bool bNotifyEvent){
+void ofxDropdown_<T>::hideDropdown(bool bNotifyEvent){
 	if(bGroupEnabled){
 		bGroupEnabled = false;
 		auto n = value.getName();
@@ -383,7 +421,7 @@ void ofxDropdown_<T>::buttonClicked(bool &v){
 	if(v && !bGroupEnabled){
 		showDropdown();
 	}else if(!v && bGroupEnabled){
-		hideDropdown("buttonClicked", false);
+		hideDropdown( false);
 	}
 }
 //--------------------------------------------------------------
@@ -394,9 +432,13 @@ void ofxDropdown_<T>::setDropDownPosition(DropDownPosition pos){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::generateDraw(){
-	ofxToggle::generateDraw();
+	bg.clear();
+	bg.rectangle(b);
+	
+	generateNameTextMesh(ofRectangle(b.x, b.y, b.width, b.height/2));
+	
 	arrow.clear();
-	auto h = b.getHeight();
+	auto h = b.getHeight()/2;
 	auto x2 = b.getMaxX();
 	
 	auto y = b.getY();
@@ -408,23 +450,42 @@ void ofxDropdown_<T>::generateDraw(){
 	arrow.lineTo(x2 - textPadding,  y  + h/2 );
 	arrow.lineTo(x2 - h /2,  y  + h - textPadding);
 	
-	optionTextMesh = getTextMesh(selectedOption, x2 - h /2 - getTextBoundingBox(selectedOption, 0, 0).width - textPadding , getTextVCenteredInRect(b));
+	
+	ofRectangle optionsTextRect = b;
+	optionsTextRect.height *= 0.5;
+	optionsTextRect.y = optionsTextRect.getMaxY();
+	
+	optionTextMesh = getTextMesh(selectedOption, x2 - getTextBoundingBox(selectedOption, 0, 0).width - textPadding , getTextVCenteredInRect(optionsTextRect));
+//	ofRectangle textRect = b;
+//	textRect.width -= h*2.5;
+//	textRect.x += h*1.5;
+//	ofRemove(optionTextMesh.getVertices(), [&](const glm::vec3& p){
+//		return !textRect.inside(p);
+//	});	
 	
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::render(){
-	ofxToggle::render();
+	ofxDropdownOption::render();
 	if(bGroupEnabled){
 		group.draw();
 	}
-	arrow.draw();
 	
+	arrow.draw();
 	ofSetColor(thisTextColor, 200);
 	
 	bindFontTexture();
 	optionTextMesh.draw();
 	unbindFontTexture();
+	
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::setDropdownElementsWidth(float width)
+{
+	group.setSize(width, group.getHeight());
+	group.setWidthElements(width);
 	
 }
 //--------------------------------------------------------------
@@ -532,6 +593,55 @@ void ofxDropdown_<T>::unregisterMouseEvents(){
 	defaultEventsPriority = p;
 }
 
-//template class ofxDropdown_<ofFile>;
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::addFromDir(ofxDropdown_* currentDD, const string& dirpath, const vector<string>& allowedExtensions)
+{
+	ofLogError("ofxDropdown_<T>::addFromDir" ) << "This function only works with ofxDirDropdown";
+}
+template<>
+void ofxDropdown_<ofFile>::addFromDir(ofxDropdown_* currentDD, const string& dirpath, const vector<string>& allowedExtensions)
+{
+	if(currentDD != nullptr)
+	{
+	
+		ofDirectory dir(dirpath);
+		for(auto& ext: allowedExtensions)
+		{
+			dir.allowExt(ext);
+		}
+		dir.listDir();
+		
+		for(size_t i = 0; i < dir.size(); i++)
+		{
+			ofFile f(dir.getPath(i));
+			if(f.exists())
+			{
+				if(f.isDirectory())
+				{
+					
+					auto dd = newDropdown(f.getBaseName());
+					addFromDir(dd, f.getAbsolutePath(), allowedExtensions);
+				}
+				else
+				{
+	
+ 					currentDD->add(f);
+				}
+			}
+		}
+	}
+	else
+	{
+		ofLogError("ofxDropdown_<ofFile>::addFromDir") << "Cannot add dir to null dropdown";
+	}
+}
+
+
+
+
+
+template class ofxDropdown_<ofFile>;
 template class ofxDropdown_<string>;
 template class ofxDropdown_<int>;

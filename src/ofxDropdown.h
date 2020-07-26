@@ -1,10 +1,10 @@
-////
-////  ofxDropdown.hpp
-////  dropdown
-////
-////  Created by Roy Macdonald on 10/14/18.
-////
-////
+//
+//  ofxDropdown.hpp
+//  dropdown
+//
+//  Created by Roy Macdonald on 10/14/18.
+//
+//
 //
 #pragma once
 
@@ -17,18 +17,20 @@
 
 using namespace std;
 
+
+
 template<class T>
 class ofxDropdown_: public ofxDropdownOption{
 
 public:
 	ofxDropdown_(){};
-	ofxDropdown_(std::string name, float width = defaultWidth, float height = defaultHeight);
-	ofxDropdown_(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
-    ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
-	ofxDropdown_(ofParameter<T> param, const std::vector<T> & dropDownOptions, float width = defaultWidth, float height = defaultHeight);
+	ofxDropdown_(std::string name, float width = defaultWidth, float height = defaultHeight*2);
+	ofxDropdown_(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight*2);
+    ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight*2);
+	ofxDropdown_(ofParameter<T> param, const std::vector<T> & dropDownOptions, float width = defaultWidth, float height = defaultHeight*2);
 	
-	ofxDropdown_ * setup(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight);
-	ofxDropdown_ * setup(std::string name, float width = defaultWidth, float height = defaultHeight);
+	ofxDropdown_ * setup(ofParameter<T> param, float width = defaultWidth, float height = defaultHeight*2);
+	ofxDropdown_ * setup(std::string name, float width = defaultWidth, float height = defaultHeight*2);
 	
 //	std::ofxDropdown_ * setup(const std::string& name, const std::vector<std::string>& dropDownOptions, float width = defaultWidth, float height = defaultHeight);
 	
@@ -42,17 +44,33 @@ public:
 	void disableMultipleSelection(bool bPropagateToChildren = true);
 	bool isEnabledMultipleSelection();
 	ofParameter<bool> & getMultiSelectionParameter();//this can be added to a gui
-	
+		
 	template<typename P>
 	typename std::enable_if<std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
 	add(const P& value){
-		return add(value, value.getBaseName());
+		return add(value, value.getFileName());
 	}
 	template<typename P>
     typename std::enable_if<!std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
 	add(const P& value){  
 	    return add(value, ofToString(value));
 	}
+	
+	bool populateFromDirectory(const string& dirpath, const vector<string>& allowedExtensions = {})
+	{
+		ofFile d(dirpath);
+		if(!d.isDirectory() || !d.exists())
+		{
+			return false;
+		}
+		
+		addFromDir(this, dirpath, allowedExtensions);
+		disableMultipleSelection();
+		enableCollapseOnSelection();
+		
+		return true;
+	}
+	
     ofxDropdown_ * add(const T& value, const string& option);
 	ofxDropdown_ * add(const std::vector<T> & options);
     ofxDropdown_ * add(const std::map<T, std::string> & options);
@@ -99,7 +117,7 @@ public:
     ofEvent<void> dropdownWillShow_E;
 	
 	void showDropdown(bool bDisableSiblings = true);
-	void hideDropdown(std::string caller, bool bNotifyEvent = true);
+	void hideDropdown(bool bNotifyEvent = true);
 	
     ofParameterGroup& getDropdownParameters();
 	
@@ -107,8 +125,8 @@ public:
 	ofParameter<T> selectedValue;
 	
 	
-	virtual void registerMouseEvents() override;
-	virtual void unregisterMouseEvents() override;
+	void registerMouseEvents() override;
+	void unregisterMouseEvents() override;
 
 	
 	void forceRedraw(){
@@ -118,11 +136,14 @@ public:
 	void setSelectedValueByName( const std::string& valueName, bool bNotify);
 	void setSelectedValueByIndex( const size_t& index, bool bNotify);
 	
+	void setDropdownElementsWidth(float width);
+	
+	
 protected:
 	
-	ofParameter<bool> bCollapseOnSelection;// = false;
-	ofParameter<bool> bMultiselection;// = false;
-	
+	ofParameter<bool> bCollapseOnSelection = { "Multi Selection", false};
+	ofParameter<bool> bMultiselection = { "Collapse On Selection", true};
+	ofParameter<bool> bDisableChildrenRecursively = {"Disable Children Recursively", true};
     ofParameterGroup dropdownParams;
 	
 	virtual bool setValue(float mx, float my, bool bCheck) override;
@@ -143,21 +164,14 @@ protected:
     vector<T> values;
 	
 	
-	
 	void groupChanged( const void * sender,bool&);
 	bool bGroupEnabled = false;
 	
-//    void valueChanged(T & value);
-
 	void buttonClicked(bool &);
 	
 	void childDropdownHidden(const void * sender, std::string&);
 	
-    
-
 	void selectedValueChanged(T & newvalue);
-	
-	
 	
     
 	ofxGuiGroup group;
@@ -172,11 +186,22 @@ protected:
 	
 	std::string selectedOption;
 	
+	void addFromDir(ofxDropdown_<T>* currentDD, const string& dirpath, const vector<string>& allowedExtensions);
+	
 private:
 	
 	std::vector<ofxDropdown_ *> childDropdowns;
+	std::vector<unique_ptr<ofxDropdown_>> ownedDropdowns;
+	std::vector<unique_ptr<ofxDropdownOption>> ownedChildren;
     
+	
+	
 };
+
+
+
+
+
 
 typedef ofxDropdown_<string> ofxDropdown;
 typedef ofxDropdown_<int> ofxIntDropdown;
