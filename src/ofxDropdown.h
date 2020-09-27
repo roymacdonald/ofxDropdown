@@ -139,6 +139,9 @@ public:
 	void setDropdownElementsWidth(float width);
 	
 	
+	virtual void deselect() override;
+
+	
 protected:
 	
 	ofParameter<bool> bCollapseOnSelection = { "Multi Selection", false};

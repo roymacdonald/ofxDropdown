@@ -172,6 +172,21 @@ void ofxDropdownOption::disableElement() {
     setNeedsRedraw();
 }
 
+void ofxDropdownOption::select()
+{
+    value.setWithoutEventNotifications(true);
+    setNeedsRedraw();
+}
+
+void ofxDropdownOption::deselect()
+{
+	cout << "ofxDropdownOption::deselect " << getName() << "\n";
+    value.setWithoutEventNotifications(false);
+    setNeedsRedraw();
+}
+
+
+
 //
 //void ofxDropdownOption::setState(State state)
 //{

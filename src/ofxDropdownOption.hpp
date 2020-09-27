@@ -33,7 +33,9 @@ public:
 		value.removeListener(listener,method);
 	}
 
-
+	void select();
+	
+	virtual void deselect();
 
 //	bool operator=(bool v);
 //	operator const bool & ();

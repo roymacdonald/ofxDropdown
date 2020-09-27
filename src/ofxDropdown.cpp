@@ -202,8 +202,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const map<T,string> & options){
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_& dd){
-	addDropdown(&dd);
-	return 0;
+	return  addDropdown(&dd);
 }
 //--------------------------------------------------------------
 template<class T>
@@ -325,6 +324,17 @@ void ofxDropdown_<T>::disableElement(ofxDropdownOption* e, bool bCheckAgainstThi
 		}
         e->disableElement();
 	}
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::deselect()
+{
+	for(auto c: childDropdowns)
+	{
+		if(c) c->deselect();
+	}
+	ofxDropdownOption::deselect();
 }
 //--------------------------------------------------------------
 template<class T>
