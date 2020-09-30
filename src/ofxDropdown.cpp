@@ -174,6 +174,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
 		groupListeners.push(o->getParameter().template cast<bool>().newListener(this, &ofxDropdown_::groupChanged));
     
 		group.add(o);
+		_updateGroupWidth();
 	}else
 	{
 		ofLogError("ofxDropdown_<T>::add") << "created children is nullptr";
@@ -212,6 +213,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::addDropdown(ofxDropdown_ * dd){
 		group.add(dd);
 		childDropdowns.push_back(dd);
 		childDropdownListeners.push(dd->dropdownHidden_E.newListener(this, &ofxDropdown_::childDropdownHidden));
+		_updateGroupWidth();
 	}else{
 		ofLogWarning("ofxDropdown_::addDropdown", "cant add nullptr dropdown");
 	}
@@ -602,6 +604,36 @@ void ofxDropdown_<T>::unregisterMouseEvents(){
 	ofxBaseGui::unregisterMouseEvents();
 	defaultEventsPriority = p;
 }
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::_updateGroupWidth()
+{
+	
+	float mx = 0;
+	float arrowW =  b.getHeight()/2;
+	
+	for(auto& c: childDropdowns)
+	{
+		if(c)
+			mx = std::max(mx, getTextBoundingBox(c->getName(), 0,0).width + arrowW);
+	}
+	for(auto& c: ownedDropdowns)
+	{
+		if(c)
+			mx = std::max(mx, getTextBoundingBox(c->getName(), 0,0).width + arrowW);
+	}
+	
+	for(auto& c: ownedChildren)
+	{
+		if(c)
+			mx = std::max(mx, getTextBoundingBox(c->getName(), 0,0).width);
+	}
+	
+	setDropdownElementsWidth(mx);
+	
+	
+}
+
 
 
 //--------------------------------------------------------------

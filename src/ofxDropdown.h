@@ -191,6 +191,8 @@ protected:
 	
 	void addFromDir(ofxDropdown_<T>* currentDD, const string& dirpath, const vector<string>& allowedExtensions);
 	
+	void _updateGroupWidth();
+	
 private:
 	
 	std::vector<ofxDropdown_ *> childDropdowns;
