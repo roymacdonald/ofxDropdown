@@ -45,16 +45,16 @@ public:
 	bool isEnabledMultipleSelection();
 	ofParameter<bool> & getMultiSelectionParameter();//this can be added to a gui
 		
-	template<typename P>
-	typename std::enable_if<std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
-	add(const P& value){
-		return add(value, value.getFileName());
-	}
-	template<typename P>
-    typename std::enable_if<!std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
-	add(const P& value){  
-	    return add(value, ofToString(value));
-	}
+//	template<typename P>
+//	typename std::enable_if<std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
+//	add(const P& value){
+//		return add(value, value.getFileName());
+//	}
+//	template<typename P>
+//    typename std::enable_if<!std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
+//	add(const P& value){
+//	    return add(value, ofToString(value));
+//	}
 	
 	bool populateFromDirectory(const string& dirpath, const vector<string>& allowedExtensions = {})
 	{
@@ -72,6 +72,7 @@ public:
 	}
 	
     ofxDropdown_ * add(const T& value, const string& option);
+	ofxDropdown_ * add(const T& value);
 	ofxDropdown_ * add(const std::vector<T> & options);
     ofxDropdown_ * add(const std::map<T, std::string> & options);
 	ofxDropdown_ * addDropdown(ofxDropdown_& dd);
@@ -141,6 +142,8 @@ public:
 	
 	virtual void deselect() override;
 
+	
+	void move(const glm::vec3& offset);
 	
 protected:
 	

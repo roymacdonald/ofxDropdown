@@ -156,10 +156,23 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 
 }
 //--------------------------------------------------------------
-//template<class T>
-//ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value) {
-//    return add(value, ofToString(value));
-//}
+template<class T>
+ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value) {
+    return add(value, ofToString(value));
+}
+
+template<>
+ofxDropdown_<ofFile> * ofxDropdown_<ofFile>::add(const ofFile& value) {
+    return add(value, value.getFileName());
+}
+//--------------------------------------------------------------
+template<>
+ofxDropdown_<string> * ofxDropdown_<string>::add(const string& value) {
+    return add(value, value);
+}
+
+
+
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
     options.push_back(option);
@@ -193,6 +206,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const vector<T> & options){
 	}
 	return this;
 }
+//--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::add(const map<T,string> & options){
     for(auto& option: options){
@@ -332,10 +346,19 @@ void ofxDropdown_<T>::disableElement(ofxDropdownOption* e, bool bCheckAgainstThi
 template<class T>
 void ofxDropdown_<T>::deselect()
 {
-	for(auto c: childDropdowns)
+	for(auto& c: childDropdowns)
 	{
 		if(c) c->deselect();
 	}
+	for(auto& c: ownedDropdowns)
+	{
+		if(c) c->deselect();
+	}
+	for(auto&c: ownedChildren)
+	{
+		if(c) c->deselect();
+	}
+	selectedOption = "";
 	ofxDropdownOption::deselect();
 }
 //--------------------------------------------------------------
@@ -401,13 +424,29 @@ bool ofxDropdown_<T>::mouseScrolled(ofMouseEventArgs & args){
 	}
 	if(isShowingDropdown()){
 		if( !group.isMinimized() && group.getShape().inside(args.x, args.y)){
-			group.setPosition(group.getPosition() + glm::vec3(0, args.scrollY * 2, 0));
+			move({0, args.scrollY * 2, 0});
 			return true;
 		}else{
 			return group.mouseScrolled(args);
 		}
 	}
 	return false;
+}
+
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::move(const glm::vec3& offset)
+{
+	group.setPosition(group.getPosition() + offset);
+	for(auto& c: childDropdowns)
+	{
+		c->move(offset);
+	}
+	for(auto& c: ownedDropdowns)
+	{
+		c->move(offset);
+	}
 }
 
 //--------------------------------------------------------------
@@ -417,6 +456,14 @@ void ofxDropdown_<T>::hideDropdown(bool bNotifyEvent){
 		bGroupEnabled = false;
 		auto n = value.getName();
 		disableElement(this);
+		for(auto& c: childDropdowns)
+		{
+			c->hideDropdown(false);
+		}
+		for(auto& c: ownedDropdowns)
+		{
+			c->hideDropdown(false);
+		}
 		if(bNotifyEvent){
 			ofNotifyEvent(dropdownHidden_E, n, this);
 		}
@@ -609,7 +656,7 @@ template<class T>
 void ofxDropdown_<T>::_updateGroupWidth()
 {
 	
-	float mx = 0;
+	float mx = ofxBaseGui::defaultWidth;
 	float arrowW =  b.getHeight()/2;
 	
 	for(auto& c: childDropdowns)

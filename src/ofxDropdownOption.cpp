@@ -180,7 +180,7 @@ void ofxDropdownOption::select()
 
 void ofxDropdownOption::deselect()
 {
-	cout << "ofxDropdownOption::deselect " << getName() << "\n";
+//	cout << "ofxDropdownOption::deselect " << getName() << "\n";
     value.setWithoutEventNotifications(false);
     setNeedsRedraw();
 }
