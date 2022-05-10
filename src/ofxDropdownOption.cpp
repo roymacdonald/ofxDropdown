@@ -78,7 +78,9 @@ bool ofxDropdownOption::mouseReleased(ofMouseEventArgs & args){
 void ofxDropdownOption::generateDraw(){
 	bg.clear();
 	bg.rectangle(b);
-	generateNameTextMesh(b);
+    if(_bRenderName){
+        generateNameTextMesh(b);
+    }
 }
 
 void ofxDropdownOption::generateNameTextMesh(const ofRectangle& rect)
@@ -118,7 +120,9 @@ void ofxDropdownOption::render(){
 			bg.setFillColor(thisBackgroundColor);
 		}
 	}
-	bg.draw();
+//    if(!_bUseTexture){
+        bg.draw();
+//    }
 //	fg.draw();
 
 //	if( value ){
@@ -131,11 +135,14 @@ void ofxDropdownOption::render(){
 		ofEnableAlphaBlending();
 	}
 	ofSetColor(thisTextColor);
-
-	bindFontTexture();
-	textMesh.draw();
-	unbindFontTexture();
-
+    if(_bUseTexture){
+        texture.draw(b);
+    }
+    if(_bRenderName){
+        bindFontTexture();
+        textMesh.draw();
+        unbindFontTexture();
+    }
 	ofSetColor(c);
 	if(blendMode!=OF_BLENDMODE_ALPHA){
 		ofEnableBlendMode(blendMode);
@@ -213,4 +220,49 @@ bool ofxDropdownOption::setValue(float mx, float my, bool bCheck){
         return true;
     }
     return false;
+}
+
+void ofxDropdownOption::setUseTexture(bool useTexture){
+    _bUseTexture = useTexture;
+}
+
+bool ofxDropdownOption::isUseTexture(){
+    return _bUseTexture;
+}
+bool ofxDropdownOption::saveTexture(const string& filepath){
+    if(texture.isAllocated()){
+        if(texture.save(filepath)){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ofxDropdownOption::loadTexture(const string& filepath){
+    if(ofFile::doesFileExist(filepath) && texture.load(filepath)){
+        this->setSize(this->getWidth(), texture.getHeight());
+        _bUseTexture = true;
+        return true;
+    }
+    return false;
+}
+
+
+void ofxDropdownOption::setTexture(ofTexture& tex){
+    if(tex.isAllocated()){
+//        texture.allocate(tex.getTextureData());
+        tex.readToPixels(texture.getPixels());
+        texture.update();
+        this->setSize(this->getWidth(), tex.getHeight());
+        
+        _bUseTexture = true;
+    }
+}
+
+void ofxDropdownOption::setRenderName(bool bRender){
+    _bRenderName = bRender;
+}
+
+bool ofxDropdownOption::isRenderingName(){
+    return _bRenderName;
 }

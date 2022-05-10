@@ -45,16 +45,6 @@ public:
 	bool isEnabledMultipleSelection();
 	ofParameter<bool> & getMultiSelectionParameter();//this can be added to a gui
 		
-//	template<typename P>
-//	typename std::enable_if<std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
-//	add(const P& value){
-//		return add(value, value.getFileName());
-//	}
-//	template<typename P>
-//    typename std::enable_if<!std::is_same<P, ofFile>::value, ofxDropdown_ *>::type
-//	add(const P& value){
-//	    return add(value, ofToString(value));
-//	}
 	
 	bool populateFromDirectory(const string& dirpath, const vector<string>& allowedExtensions = {})
 	{
@@ -145,6 +135,11 @@ public:
 	
 	void move(const glm::vec3& offset);
 	
+    std::vector<ofxDropdown_ *>& getChildDropdowns(){return childDropdowns;}
+    std::vector<unique_ptr<ofxDropdown_>>& getOwnedDropdowns(){return ownedDropdowns;}
+    std::vector<unique_ptr<ofxDropdownOption>>& getOwnedChildren(){return ownedChildren;}
+    
+    
 protected:
 	
 	ofParameter<bool> bCollapseOnSelection = { "Multi Selection", false};

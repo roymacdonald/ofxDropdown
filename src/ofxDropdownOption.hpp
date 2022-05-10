@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofxToggle.h"
-
+#include "ofImage.h"
 class ofxDropdownOption : public ofxBaseGui{
   
 public:
@@ -42,6 +42,17 @@ public:
 
 	virtual ofAbstractParameter & getParameter();
 
+    
+    void setUseTexture(bool useTexture);
+    bool isUseTexture();
+    
+    void setTexture(ofTexture& tex);
+    
+    void setRenderName(bool bRender);
+    bool isRenderingName();
+    
+    bool loadTexture(const std::string& filepath);
+    bool saveTexture(const std::string& filepath);
 protected:
 	void generateNameTextMesh(const ofRectangle& rect);
 	
@@ -65,4 +76,8 @@ protected:
 	void valueChanged(bool & value);
 	ofPath bg;//,fg;//,cross;
 	ofVboMesh textMesh;
+    
+    ofImage texture;
+    bool _bUseTexture = false;
+    bool _bRenderName = true;
 };
