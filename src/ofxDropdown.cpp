@@ -180,7 +180,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
     
 //    auto o = make_shared<ofxDropdownOption>();
 	
-	ownedChildren.push_back(std::move(make_unique<ofxDropdownOption>()));
+	ownedChildren.emplace_back(make_unique<ofxDropdownOption>());
 	auto o = ownedChildren.back().get();
 	if(o){
 		o->setup(option, value == selectedValue.get());
@@ -730,7 +730,7 @@ void ofxDropdown_<ofFile>::addFromDir(ofxDropdown_* currentDD, const string& dir
 
 
 
-
+template class ofxDropdown_<uint8_t>;
 template class ofxDropdown_<ofFile>;
 template class ofxDropdown_<string>;
 template class ofxDropdown_<int>;
