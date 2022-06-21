@@ -701,7 +701,8 @@ void ofxDropdown_<ofFile>::addFromDir(ofxDropdown_* currentDD, const string& dir
 			dir.allowExt(ext);
 		}
 		dir.listDir();
-		
+        dir.sort();
+
 		for(size_t i = 0; i < dir.size(); i++)
 		{
 			ofFile f(dir.getPath(i));
