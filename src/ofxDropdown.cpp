@@ -11,31 +11,39 @@
 #include "ofGraphics.h"
 #include "ofxGui.h"
 
-
 //--------------------------------------------------------------
 template<class T>
-ofParameter<bool> & ofxDropdown_<T>::getMultiSelectionParameter(){
-	return bMultiselection;
+ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, float width , float height){
+    setup(param,width,height);
 }
-//--------------------------------------------------------------
 template<class T>
-ofParameter<bool> & ofxDropdown_<T>::getCollapseOnSelectionParameter(){
-	return bCollapseOnSelection;
+ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width , float height){
+    setup(param,width,height);
+    add(dropDownOptions);
 }
-
 template<class T>
-ofParameterGroup& ofxDropdown_<T>::getDropdownParameters(){
-    return dropdownParams;
+ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const std::vector<T> & dropDownOptions, float width , float height){
+    setup(param,width,height);
+    add(dropDownOptions);
 }
-//--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T>::ofxDropdown_(std::string name, float width, float height){
-	setup(name, width, height);
+    setup(name, width, height);
 }
+
+template<class T>
+ofxDropdown_<T>::~ofxDropdown_(){
+    
+}
+
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float height ){
-
+    if (bIsSetup){
+        ofLogWarning("ofxDropdown_<T>::setup" ) << "Dropdown \"name\" is already setup. Nothing will be done";
+        return this;
+    }
+        
 	ofxDropdownOption::setup(name, false , width, height);
 	buttonListener = value.newListener(this,&ofxDropdown_::buttonClicked);
 
@@ -52,26 +60,18 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	dropdownParams.add(bCollapseOnSelection);
 	dropdownParams.add(bDisableChildrenRecursively);
 	
+    bIsSetup = true;
+    
 	return this;
 }
-//--------------------------------------------------------------
-template<class T>
-ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, float width , float height){
-	setup(param,width,height);
-}
-template<class T>
-ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const map<T,string>& dropDownOptions, float width , float height){
-    setup(param,width,height);
-    add(dropDownOptions);
-}
-template<class T>
-ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, const std::vector<T> & dropDownOptions, float width , float height){
-	setup(param,width,height);
-	add(dropDownOptions);
-}
+
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, float height){
+    if (bIsSetup){
+        ofLogWarning("ofxDropdown_<T>::setup" ) << "Dropdown \"name\" is already setup. Nothing will be done";
+        return this;
+    }
 	selectedValue.makeReferenceTo(param);
 	return setup(param.getName(), width, height);
 }
@@ -179,9 +179,7 @@ template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
     options.push_back(option);
     values.push_back(value);
-    
-//    auto o = make_shared<ofxDropdownOption>();
-	
+    	
 	ownedChildren.emplace_back(make_unique<ofxDropdownOption>());
 	auto o = ownedChildren.back().get();
 	if(o){
@@ -195,9 +193,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
 		ofLogError("ofxDropdown_<T>::add") << "created children is nullptr";
 	}
 	
-//	if(value == selectedValue.get()){
-//		setNeedsRedraw();
-//	}
+
     return this;
 }
 //--------------------------------------------------------------
@@ -639,19 +635,22 @@ bool ofxDropdown_<T>::setValue(float mx, float my, bool bCheck){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::registerMouseEvents(){
-	auto p = defaultEventsPriority;
-	defaultEventsPriority = ofEventOrder(defaultEventsPriority - 10);
-	ofxBaseGui::registerMouseEvents();
-	defaultEventsPriority = p;
+    if(bRegisteredForMouseEvents == true){
+        return; // already registered.
+    }
+    bRegisteredForMouseEvents = true;
+    ofRegisterMouseEvents(this, int(defaultEventsPriority) - 100);
 }
+
 
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::unregisterMouseEvents(){
-	auto p = defaultEventsPriority;
-	defaultEventsPriority = ofEventOrder(defaultEventsPriority - 10);
-	ofxBaseGui::unregisterMouseEvents();
-	defaultEventsPriority = p;
+    if(bRegisteredForMouseEvents == false){
+        return; // not registered.
+    }
+    ofUnregisterMouseEvents(this, int(defaultEventsPriority) - 100);
+    bRegisteredForMouseEvents = false;
 }
 //--------------------------------------------------------------
 template<class T>
@@ -740,6 +739,23 @@ ofxDropdown_<string>
 
 }
 
+
+//--------------------------------------------------------------
+template<class T>
+ofParameter<bool> & ofxDropdown_<T>::getMultiSelectionParameter(){
+    return bMultiselection;
+}
+//--------------------------------------------------------------
+template<class T>
+ofParameter<bool> & ofxDropdown_<T>::getCollapseOnSelectionParameter(){
+    return bCollapseOnSelection;
+}
+
+template<class T>
+ofParameterGroup& ofxDropdown_<T>::getDropdownParameters(){
+    return dropdownParams;
+}
+//--------------------------------------------------------------
 
 
 

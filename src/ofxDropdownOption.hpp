@@ -6,7 +6,7 @@ class ofxDropdownOption : public ofxBaseGui{
   
 public:
 	ofxDropdownOption(){}
-	~ofxDropdownOption();
+	virtual ~ofxDropdownOption();
 	
 	void enableElement();
     void disableElement();

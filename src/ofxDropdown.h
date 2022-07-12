@@ -23,6 +23,7 @@ template<class T>
 class ofxDropdown_: public ofxDropdownOption{
 
 public:
+    virtual ~ofxDropdown_();
     // ---------------------------------------------------
     // ----------------- Constructors
     // ---------------------------------------------------
@@ -389,7 +390,8 @@ private:
 	std::vector<unique_ptr<ofxDropdown_>> ownedDropdowns;
 	std::vector<unique_ptr<ofxDropdownOption>> ownedChildren;
     
-	
+    bool bRegisteredForMouseEvents = false;
+    bool bIsSetup = false;
 	
 };
 
