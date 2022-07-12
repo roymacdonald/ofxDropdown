@@ -161,10 +161,12 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value) {
     return add(value, ofToString(value));
 }
 
+#ifndef TARGET_WIN32
 template<>
 ofxDropdown_<ofFile> * ofxDropdown_<ofFile>::add(const ofFile& value) {
     return add(value, value.getFileName());
 }
+#endif
 //--------------------------------------------------------------
 template<>
 ofxDropdown_<string> * ofxDropdown_<string>::add(const string& value) {
@@ -690,7 +692,13 @@ void ofxDropdown_<T>::addFromDir(ofxDropdown_* currentDD, const string& dirpath,
 	ofLogError("ofxDropdown_<T>::addFromDir" ) << "This function only works with ofxDirDropdown";
 }
 template<>
-void ofxDropdown_<ofFile>::addFromDir(ofxDropdown_* currentDD, const string& dirpath, const vector<string>& allowedExtensions)
+void
+#ifndef TARGET_WIN32
+ofxDropdown_<ofFile>
+#else
+ofxDropdown_<string>
+#endif
+::addFromDir(ofxDropdown_* currentDD, const string& dirpath, const vector<string>& allowedExtensions)
 {
 	if(currentDD != nullptr)
 	{
@@ -716,8 +724,11 @@ void ofxDropdown_<ofFile>::addFromDir(ofxDropdown_* currentDD, const string& dir
 				}
 				else
 				{
-	
+#ifndef TARGET_WIN32
  					currentDD->add(f);
+#else
+                    currentDD->add(f.getAbsolutePath(), f.getFileName());
+#endif
 				}
 			}
 		}
@@ -726,12 +737,15 @@ void ofxDropdown_<ofFile>::addFromDir(ofxDropdown_* currentDD, const string& dir
 	{
 		ofLogError("ofxDropdown_<ofFile>::addFromDir") << "Cannot add dir to null dropdown";
 	}
+
 }
 
 
 
 
 template class ofxDropdown_<uint8_t>;
+#ifndef TARGET_WIN32
 template class ofxDropdown_<ofFile>;
+#endif
 template class ofxDropdown_<string>;
 template class ofxDropdown_<int>;
