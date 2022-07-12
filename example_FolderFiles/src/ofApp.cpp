@@ -17,6 +17,13 @@ void ofApp::draw() {
 }
 
 //--------------------------------------------------------------
-void ofApp::onSongChange(ofFile & file) {
-    std::cout << file.path() << std::endl;
+//#ifndef TARGET_WIN32
+//void ofApp::onSongChange(ofFile & file) {
+//    std::cout << file.path() << std::endl;
+//}
+//
+//#else
+void ofApp::onSongChange(string & filepath) {
+    std::cout << filepath << std::endl;
 }
+//#endif

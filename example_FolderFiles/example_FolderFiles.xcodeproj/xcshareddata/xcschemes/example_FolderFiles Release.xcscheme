@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-               BuildableName = "example_Basic.app"
-               BlueprintName = "example_Basic"
-               ReferencedContainer = "container:example_Basic.xcodeproj">
+               BuildableName = "example_FolderFiles.app"
+               BlueprintName = "example_FolderFiles"
+               ReferencedContainer = "container:example_FolderFiles.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "example_Basic.app"
-            BlueprintName = "example_Basic"
-            ReferencedContainer = "container:example_Basic.xcodeproj">
+            BuildableName = "example_FolderFiles.app"
+            BlueprintName = "example_FolderFiles"
+            ReferencedContainer = "container:example_FolderFiles.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
@@ -46,15 +46,15 @@
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Release"
       ignoresPersistentStateOnLaunch = "NO"
-      debugDocumentVersioning = "YES"
+      debugDocumentVersioning = "NO"
       allowLocationSimulation = "YES">
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "example_Basic.app"
-            BlueprintName = "example_Basic"
-            ReferencedContainer = "container:example_Basic.xcodeproj">
+            BuildableName = "example_FolderFiles.app"
+            BlueprintName = "example_FolderFiles"
+            ReferencedContainer = "container:example_FolderFiles.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -65,14 +65,14 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Release"
-      debugDocumentVersioning = "YES">
+      debugDocumentVersioning = "NO">
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "example_Basic.app"
-            BlueprintName = "example_Basic"
-            ReferencedContainer = "container:example_Basic.xcodeproj">
+            BuildableName = "example_FolderFiles.app"
+            BlueprintName = "example_FolderFiles"
+            ReferencedContainer = "container:example_FolderFiles.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
