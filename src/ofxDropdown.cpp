@@ -114,46 +114,44 @@ void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify
 template<class T>
 void ofxDropdown_<T>::setSelectedValueByName( const std::string& valueName, bool bNotify){
 
-		auto it = find(options.begin(), options.end(), valueName);
-		if(it != options.end()){// it was found. it should be found anyways but better to double check
-			auto index = std::distance(options.begin(), it);
-			setSelectedValueByIndex(index, bNotify);
-		}
+	auto it = find(options.begin(), options.end(), valueName);
+	if(it != options.end()){// it was found. it should be found anyways but better to double check
+		auto index = std::distance(options.begin(), it);
+		setSelectedValueByIndex(index, bNotify);
+	}
 	
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 	if(b){
-	if(sender){
+		if(sender){
 		
-		if(!bGroupEnabled){
-			ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
-		}else{
+			if(!bGroupEnabled){
+				ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
+			}else{
 
-			auto& g = group.getParameter().castGroup(); 
+				auto& g = group.getParameter().castGroup(); 
 					
-			int foundIndex = -1;           
-			for(int i = 0; i <g.size(); i++){
-				//			std::cout <<  i  << "  -  ";
-				if(g.getBool(i).getInternalObject() == ((ofParameter<bool> *)(sender))->getInternalObject()){
-					foundIndex = i;
-					break;	
+				int foundIndex = -1;           
+				for(int i = 0; i <g.size(); i++){
+					//			std::cout <<  i  << "  -  ";
+					if(g.getBool(i).getInternalObject() == ((ofParameter<bool> *)(sender))->getInternalObject()){
+						foundIndex = i;
+						break;	
+					}
 				}
-			}
-			if(foundIndex >= 0){
-				setSelectedValueByName(g.getVoid(foundIndex).getName(), true);
-			}else if(bCollapseOnSelection){
-				hideDropdown();
-			}
+				if(foundIndex >= 0){
+					setSelectedValueByName(g.getVoid(foundIndex).getName(), true);
+				}else if(bCollapseOnSelection){
+					hideDropdown();
+				}
 			
+			}
+		}else{
+			ofLogVerbose("ofxDropdown_::groupChanged(...)")  << "sender = null";
 		}
-	}else{
-		ofLogVerbose("ofxDropdown_::groupChanged(...)")  << "sender = null";
 	}
-
-}
-
 }
 //--------------------------------------------------------------
 template<class T>
@@ -638,8 +636,15 @@ void ofxDropdown_<T>::registerMouseEvents(){
     if(bRegisteredForMouseEvents == true){
         return; // already registered.
     }
-    bRegisteredForMouseEvents = true;
+#ifndef TARGET_WIN32
     ofRegisterMouseEvents(this, int(defaultEventsPriority) - 100);
+#else
+	auto p = defaultEventsPriority;
+	defaultEventsPriority = ofEventOrder(defaultEventsPriority - 10);
+	ofxBaseGui::registerMouseEvents();
+	defaultEventsPriority = p;
+#endif
+	bRegisteredForMouseEvents = true;
 }
 
 
@@ -649,7 +654,14 @@ void ofxDropdown_<T>::unregisterMouseEvents(){
     if(bRegisteredForMouseEvents == false){
         return; // not registered.
     }
+#ifndef TARGET_WIN32
     ofUnregisterMouseEvents(this, int(defaultEventsPriority) - 100);
+#else
+	auto p = defaultEventsPriority;
+	defaultEventsPriority = ofEventOrder(defaultEventsPriority - 10);
+	ofxBaseGui::unregisterMouseEvents();
+	defaultEventsPriority = p;
+#endif
     bRegisteredForMouseEvents = false;
 }
 //--------------------------------------------------------------
