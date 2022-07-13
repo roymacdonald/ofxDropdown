@@ -371,6 +371,7 @@ protected:
 	ofxGuiGroup group;
 	ofEventListeners groupListeners;
 	ofEventListeners childDropdownListeners;
+    ofEventListeners mouseListeners;
 	
 	ofEventListener buttonListener;
     ofEventListener setlectedValueListener;

@@ -639,7 +639,15 @@ void ofxDropdown_<T>::registerMouseEvents(){
         return; // already registered.
     }
     bRegisteredForMouseEvents = true;
-    ofRegisterMouseEvents(this, int(defaultEventsPriority) - 100);
+
+    int prio = int(defaultEventsPriority) - 100;
+
+    mouseListeners.push(ofEvents().mouseDragged.newListener(this, &ofxDropdown_<T>::mouseDragged, prio));
+    mouseListeners.push(ofEvents().mouseMoved.newListener(this, &ofxDropdown_<T>::mouseMoved, prio));
+    mouseListeners.push(ofEvents().mousePressed.newListener(this, &ofxDropdown_<T>::mousePressed, prio));
+    mouseListeners.push(ofEvents().mouseReleased.newListener(this, &ofxDropdown_<T>::mouseReleased, prio));
+    mouseListeners.push(ofEvents().mouseScrolled.newListener(this, &ofxDropdown_<T>::mouseScrolled, prio));
+
 }
 
 
@@ -649,7 +657,9 @@ void ofxDropdown_<T>::unregisterMouseEvents(){
     if(bRegisteredForMouseEvents == false){
         return; // not registered.
     }
-    ofUnregisterMouseEvents(this, int(defaultEventsPriority) - 100);
+
+    mouseListeners.unsubscribeAll();
+
     bRegisteredForMouseEvents = false;
 }
 //--------------------------------------------------------------
