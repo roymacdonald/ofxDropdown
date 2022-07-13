@@ -326,6 +326,11 @@ public:
     virtual bool mouseMoved(ofMouseEventArgs & args) override;
     virtual bool mouseDragged(ofMouseEventArgs & args) override;
     virtual bool mouseScrolled(ofMouseEventArgs & args) override;
+    virtual void mouseEntered(ofMouseEventArgs&) override{
+    }
+    virtual void mouseExited(ofMouseEventArgs&) override{
+    }
+    
     
     void registerMouseEvents() override;
     void unregisterMouseEvents() override;

@@ -636,14 +636,7 @@ void ofxDropdown_<T>::registerMouseEvents(){
     if(bRegisteredForMouseEvents == true){
         return; // already registered.
     }
-#ifndef TARGET_WIN32
     ofRegisterMouseEvents(this, int(defaultEventsPriority) - 100);
-#else
-	auto p = defaultEventsPriority;
-	defaultEventsPriority = ofEventOrder(defaultEventsPriority - 10);
-	ofxBaseGui::registerMouseEvents();
-	defaultEventsPriority = p;
-#endif
 	bRegisteredForMouseEvents = true;
 }
 
@@ -654,14 +647,7 @@ void ofxDropdown_<T>::unregisterMouseEvents(){
     if(bRegisteredForMouseEvents == false){
         return; // not registered.
     }
-#ifndef TARGET_WIN32
     ofUnregisterMouseEvents(this, int(defaultEventsPriority) - 100);
-#else
-	auto p = defaultEventsPriority;
-	defaultEventsPriority = ofEventOrder(defaultEventsPriority - 10);
-	ofxBaseGui::unregisterMouseEvents();
-	defaultEventsPriority = p;
-#endif
     bRegisteredForMouseEvents = false;
 }
 //--------------------------------------------------------------

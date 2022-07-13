@@ -19,7 +19,11 @@ public:
 	virtual bool mouseMoved(ofMouseEventArgs & args);
 	virtual bool mousePressed(ofMouseEventArgs & args);
 	virtual bool mouseDragged(ofMouseEventArgs & args);
-	virtual bool mouseReleased(ofMouseEventArgs & args);
+	virtual bool mouseReleased(ofMouseEventArgs & args); 
+	virtual void mouseEntered(ofMouseEventArgs&) {
+	}
+	virtual void mouseExited(ofMouseEventArgs&) {
+	}
 	virtual bool mouseScrolled(ofMouseEventArgs & args){return false;}
 	
 
