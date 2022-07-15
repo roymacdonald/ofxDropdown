@@ -769,9 +769,24 @@ ofParameterGroup& ofxDropdown_<T>::getDropdownParameters(){
 
 
 
-template class ofxDropdown_<uint8_t>;
+//template class ofxDropdown_<uint8_t>;
 #ifndef TARGET_WIN32
 template class ofxDropdown_<ofFile>;
 #endif
 template class ofxDropdown_<string>;
-template class ofxDropdown_<int>;
+//template class ofxDropdown_<int>;
+
+template class ofxDropdown_<int8_t>;
+template class ofxDropdown_<uint8_t>;
+template class ofxDropdown_<int16_t>;
+template class ofxDropdown_<uint16_t>;
+template class ofxDropdown_<int32_t>;
+template class ofxDropdown_<uint32_t>;
+template class ofxDropdown_<int64_t>;
+template class ofxDropdown_<uint64_t>;
+
+//for some reason osx errors if this isn't defined
+#ifdef TARGET_OSX
+template class ofxDropdown_<typename std::conditional<std::is_same<uint32_t, size_t>::value || std::is_same<uint64_t, size_t>::value, bool, size_t>::type>;
+#endif
+
