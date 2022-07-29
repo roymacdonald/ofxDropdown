@@ -256,11 +256,18 @@ public:
     // ---------------------------------------------------
     // ----------------- ofParameters
     // ---------------------------------------------------
+    ///\brief this is just a needed function, as it overrides a virtual abstract base function.
+    ///\return the selectedValue ofParam, but as it is an ofAbstractParam you will need to cast it properly in order to make it useful.
+    ///As such, it is way much easier to simply acces selectedValue directly.
     virtual ofAbstractParameter & getParameter() override;
 
+    ///\brief get the parameter group for the dropdown paramaters. Use this if you want to add to a gui these parameters.
+    ///\return ofParameterGroup with the dropdown params.
     ofParameterGroup& getDropdownParameters();
 	
 	
+    
+    ///\brief selected value parameter. This is the one that actually changes when a selection in the dropdown is made.
 	ofParameter<T> selectedValue;
 	
 	
@@ -280,21 +287,32 @@ public:
     /// \return true if showind the dropdown, false otherwise
     bool isShowingDropdown();
     
-    
+    ///\brief Force the redrawing of this gui widget. This automatically happens by itself but there are some edge case where you might want to trigger it.
+    /// Don't call this function on every frame or very often as you will be using computational resources unnecesarily.
 	void forceRedraw(){
 		setNeedsRedraw();
 	}
     
+    ///\brief Enumeration of the possible positions where you can make the dropdown to show.
+    ///These are relative to the gui that contains the dropdown, so if you set it to DD_RIGHT, the dropdown will show at the right of the container gui.
     enum DropDownPosition{
         DD_RIGHT,
         DD_BELOW,
         DD_ABOVE,
         DD_LEFT
     };
+    
+    ///\brief set the dropdown position relative to the GUI group that contains it.
+    ///\param pos (DropDownPosition) one of the values of the DropDownPosition  enumeration.
     void setDropDownPosition(DropDownPosition pos);
     
+    ///\brief move the dropdown by an offset of its default position.
+    ///This is very useful for scrolling a dropdown.
     void move(const glm::vec3& offset);
     
+    ///\brief Set the width of the dropdown elements.
+    ///This automatically changes to fit the values of the dropdown, but you can changing to something else if you wish.
+    ///\param width the new width to set in pixels.
     void setDropdownElementsWidth(float width);
     
     
