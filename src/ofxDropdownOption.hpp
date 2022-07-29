@@ -80,4 +80,6 @@ protected:
     ofImage texture;
     bool _bUseTexture = false;
     bool _bRenderName = true;
+private:
+    ofEventListener listener;
 };

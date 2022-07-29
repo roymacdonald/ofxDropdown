@@ -7,7 +7,7 @@ ofxDropdownOption::ofxDropdownOption(ofParameter<bool> _bVal, float width, float
 }
 
 ofxDropdownOption::~ofxDropdownOption(){
-	value.removeListener(this,&ofxDropdownOption::valueChanged);
+//	value.removeListener(this,&ofxDropdownOption::valueChanged);
 }
 
 ofxDropdownOption * ofxDropdownOption::setup(ofParameter<bool> _bVal, float width, float height){
@@ -19,7 +19,8 @@ ofxDropdownOption * ofxDropdownOption::setup(ofParameter<bool> _bVal, float widt
 	value.makeReferenceTo(_bVal);
 //	checkboxRect.set(1, 1, b.height - 2, b.height - 2);
 
-	value.addListener(this,&ofxDropdownOption::valueChanged);
+    
+    listener = value.newListener(this,&ofxDropdownOption::valueChanged);
 	registerMouseEvents();
 	setNeedsRedraw();
 
