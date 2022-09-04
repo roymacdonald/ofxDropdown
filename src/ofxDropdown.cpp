@@ -58,8 +58,15 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
     dropdownParams.setName(name + " params");
 	dropdownParams.add(bMultiselection);
 	dropdownParams.add(bCollapseOnSelection);
-	dropdownParams.add(bDisableChildrenRecursively);
-	
+    dropdownParams.add(bSetChildrenCollapseOnSelection);
+    dropdownParams.add(bSetChildrenMultiSelection);
+    
+    
+    paramsListeners.push(bCollapseOnSelection.newListener(this, &ofxDropdown_<T>::collapseOnSelectionChanged));
+    paramsListeners.push(bMultiselection.newListener(this, &ofxDropdown_<T>::multiSelectionChanged));
+    
+    
+    
     bIsSetup = true;
     
 	return this;
@@ -269,6 +276,9 @@ void ofxDropdown_<T>::clear(){
 	childDropdowns.clear();
 	ownedChildren.clear();
 	ownedDropdowns.clear();
+    groupListeners.unsubscribeAll();
+    childDropdownListeners.unsubscribeAll();
+    
 }
 //--------------------------------------------------------------
 template<class T>
@@ -553,61 +563,65 @@ ofAbstractParameter & ofxDropdown_<T>::getParameter(){
 
 //--------------------------------------------------------------
 template<class T>
+void ofxDropdown_<T>::collapseOnSelectionChanged(bool&){
+    if(bSetChildrenCollapseOnSelection){
+        for(auto& c: childDropdowns){
+            if(bCollapseOnSelection){
+                c->enableCollapseOnSelection(bSetChildrenCollapseOnSelection);
+            }else{
+                c->disableCollapseOnSelection(bSetChildrenCollapseOnSelection);
+            }
+        }
+    } 
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::multiSelectionChanged(bool&){
+    if(bSetChildrenMultiSelection){
+        for(auto& c: childDropdowns){
+            if(bMultiselection){
+                c->enableMultipleSelection(bSetChildrenMultiSelection);
+            }else{
+                c->disableMultipleSelection(bSetChildrenMultiSelection);
+            }
+        }
+    } 
+}
+
+
+//--------------------------------------------------------------
+template<class T>
 void ofxDropdown_<T>::enableCollapseOnSelection(bool bPropagateToChildren){
-//	getCollapseOnSelectionParameter() = true;
-	bCollapseOnSelection = true;// 
-	if(bPropagateToChildren){
-		for(auto& c: childDropdowns){
-			c->enableCollapseOnSelection();
-		}
-	} 
-	
+    bSetChildrenCollapseOnSelection = bPropagateToChildren;
+	bCollapseOnSelection = true;
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::disableCollapseOnSelection(bool bPropagateToChildren){
-	bCollapseOnSelection = false;
-//	bCollapseOnSelection = true;// 
-	if(bPropagateToChildren){
-		for(auto& c: childDropdowns){
-			c->disableCollapseOnSelection();
-		}
-	} 
-	
-	
+    bSetChildrenCollapseOnSelection = bPropagateToChildren;
+    bCollapseOnSelection = false;
 }
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::isEnabledCollapseOnSelection(){
 	return bCollapseOnSelection;
-//	return getCollapseOnSelectionParameter();	
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::enableMultipleSelection(bool bPropagateToChildren){
+    bSetChildrenMultiSelection = bPropagateToChildren;
 	bMultiselection = true;
-	if(bPropagateToChildren){
-		for(auto& c: childDropdowns){
-			c->enableMultipleSelection();
-		}
-	} 
 }
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::disableMultipleSelection(bool bPropagateToChildren){
+    bSetChildrenMultiSelection = bPropagateToChildren;
 	bMultiselection = false;
-	if(bPropagateToChildren){
-		for(auto& c: childDropdowns){
-			c->disableMultipleSelection();
-		}
-	}
-	//getMultiSelectionParameter() = false;
 }
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::isEnabledMultipleSelection(){
 	return bMultiselection;
-//	return getMultiSelectionParameter();
 }
 //--------------------------------------------------------------
 template<class T>

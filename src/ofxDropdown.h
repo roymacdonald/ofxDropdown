@@ -353,9 +353,16 @@ public:
     
 protected:
 	
-	ofParameter<bool> bCollapseOnSelection = { "Multi Selection", false};
-	ofParameter<bool> bMultiselection = { "Collapse On Selection", true};
-	ofParameter<bool> bDisableChildrenRecursively = {"Disable Children Recursively", true};
+    ofEventListeners paramsListeners;
+    
+    void collapseOnSelectionChanged(bool&);
+    void multiSelectionChanged(bool&);
+    
+	ofParameter<bool> bCollapseOnSelection = { "Collapse On Selection", false};
+	ofParameter<bool> bMultiselection = { "Multi Selection", true};
+	ofParameter<bool> bSetChildrenCollapseOnSelection = {"Children Collapse On Selection", true};
+    ofParameter<bool> bSetChildrenMultiSelection = {"Children Multi Selection", true};
+    
     ofParameterGroup dropdownParams;
 	
 	virtual bool setValue(float mx, float my, bool bCheck) override;
