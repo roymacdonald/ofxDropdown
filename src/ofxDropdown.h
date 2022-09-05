@@ -349,6 +349,25 @@ public:
     void unregisterMouseEvents() override;
 
     
+    // ---------------------------------------------------
+    // ----------------- getters
+    // ---------------------------------------------------
+    ///\brief returns the options for this dropdown.
+    ///This does not include nested dropdowns.
+    ///\returns an std::vector<std::string> with the available options in the dropdown. Each of these strings are what you see in the dropdown.
+    
+    const vector<string> & getOptions(){return options;}
+    
+    ///\brief returns the values for this dropdown.
+    ///This does not include nested dropdowns.
+    ///\returns an std::vector<T> with the value that is mapped to an option. Values and options share their index.
+    const vector<T> & getValues(){return values;}
+    
+    ///\brief returns the number of options or valuesthis dropdown.
+    ///This does not include nested dropdowns.
+    ///\returns std::size_t with the amount of options or values.
+    size_t getNumOptions(){return options.size(); }
+    
     
     
 protected:
