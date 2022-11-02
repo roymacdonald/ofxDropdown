@@ -22,6 +22,8 @@ meta:
 	ADDON_URL = http://github.com/roymacdonald/ofxDropdown
 
 common:
+	ADDON_DEFINES = USE_OFX_DROPDOWN
+	
 	# dependencies with other addons, a list of them separated by spaces 
 	# or use += in several lines
 	# ADDON_DEPENDENCIES =
