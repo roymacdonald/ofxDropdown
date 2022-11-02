@@ -334,6 +334,8 @@ public:
     std::vector<unique_ptr<ofxDropdown_>>& getOwnedDropdowns(){return ownedDropdowns;}
     std::vector<unique_ptr<ofxDropdownOption>>& getOwnedChildren(){return ownedChildren;}
     
+    ofxGuiGroup& getChildGuiGroup(){ return group;}
+    const ofxGuiGroup& getChildGuiGroup() const{ return group;}
     
     // ---------------------------------------------------
     // ----------------- Overriden mouse callbacks. Dont call these manually
