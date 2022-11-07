@@ -775,11 +775,175 @@ ofParameter<bool> & ofxDropdown_<T>::getCollapseOnSelectionParameter(){
     return bCollapseOnSelection;
 }
 
+//--------------------------------------------------------------
 template<class T>
 ofParameterGroup& ofxDropdown_<T>::getDropdownParameters(){
     return dropdownParams;
 }
+
 //--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::setupTooltip(ofJson &json){
+    auto& j0 = json[getName()];
+    
+    if(j0.contains("tooltip")){
+        setTooltipText( j0["tooltip"]);
+    }else{
+        j0["tooltip"] = "";
+    }
+    auto& j = j0["group"];
+    for(auto& c: childDropdowns)
+    {
+        if(c) c->setupTooltip(j);
+    }
+    for(auto& c: ownedDropdowns)
+    {
+        if(c) c->setupTooltip(j);
+    }
+    for(auto&c: ownedChildren)
+    {
+        if(c) c->setupTooltip(j);
+    }
+    enableTooltip();
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::setupTooltip(const string& jsonFilePath){
+    if(ofFile::doesFileExist(jsonFilePath)){
+        setupTooltip(ofLoadJson(jsonFilePath));
+    }
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::resetTooltips(){
+    for(auto& c: childDropdowns)
+    {
+        if(c) c->removeTooltip();
+    }
+    for(auto& c: ownedDropdowns)
+    {
+        if(c) c->removeTooltip();
+    }
+    for(auto&c: ownedChildren)
+    {
+        if(c) c->removeTooltip();
+    }
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::addTooltip(T value, const string& text){
+    auto o = getOptionByValue(value);
+    if(o) o->setTooltipText(text);
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::addTooltip(const string& option, const string& text){
+    auto o = getOptionByName(option);
+    if(o) o->setTooltipText(text);
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::enableTooltip(){
+    if(!bTooltipsEnabled){
+        bTooltipsEnabled = true;
+        for(auto& c: childDropdowns)
+        {
+            if(c) c->enableTooltip();
+        }
+        for(auto& c: ownedDropdowns)
+        {
+            if(c) c->enableTooltip();
+        }
+        for(auto&c: ownedChildren)
+        {
+            if(c) c->enableTooltip();
+        }
+    }
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::disableTooltip(){
+    if(bTooltipsEnabled){
+        bTooltipsEnabled = false;
+        for(auto& c: childDropdowns)
+        {
+            if(c) c->disableTooltip();
+        }
+        for(auto& c: ownedDropdowns)
+        {
+            if(c) c->disableTooltip();
+        }
+        for(auto&c: ownedChildren)
+        {
+            if(c) c->disableTooltip();
+        }
+    }
+}
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::isTooltipEnabled(){
+    return bTooltipsEnabled;
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::drawTooltip(){
+    if(bGroupEnabled){
+        for(auto& c: childDropdowns)
+        {
+            if(c) c->drawTooltip();
+        }
+        for(auto& c: ownedDropdowns)
+        {
+            if(c) c->drawTooltip();
+        }
+        for(auto&c: ownedChildren)
+        {
+            if(c) c->drawTooltip();
+        }
+    }else{
+        ofxDropdownOption::drawTooltip();
+    }
+    
+}
+
+//--------------------------------------------------------------
+template<class T>
+ofxDropdownOption* ofxDropdown_<T>::getOptionByName(const string& name){
+    auto it = find(options.begin(), options.end(), name);
+    if(it != options.end()){// it was found. it should be found anyways but better to double check
+        auto index = std::distance(options.begin(), it);
+        return getOptionByIndex(index);
+//        auto c  = group.getControl(index);
+//        if(c) return dynamic_cast<ofxDropdownOption*>(c);
+    }
+    return nullptr;
+}
+//--------------------------------------------------------------
+template<class T>
+ofxDropdownOption* ofxDropdown_<T>::getOptionByValue(const T& value){
+    auto it = find(values.begin(), values.end(), value);
+    if(it != values.end()){// it was found. it should be found anyways but better to double check
+        auto index = std::distance(values.begin(), it);
+        return getOptionByIndex(index);
+//        auto c  = group.getControl(index);
+//        if(c) return dynamic_cast<ofxDropdownOption*>(c);
+    }
+    return nullptr;
+}
+//--------------------------------------------------------------
+template<class T>
+ofxDropdownOption* ofxDropdown_<T>::getOptionByIndex(const size_t& index){
+    auto c  = group.getControl(index);
+    if(c) return dynamic_cast<ofxDropdownOption*>(c);
+    return nullptr;
+}
+
+
 
 
 

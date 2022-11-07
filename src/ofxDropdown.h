@@ -14,6 +14,7 @@
 
 #include "ofxDropdownOption.hpp"
 
+#include "ofJson.h"
 
 using namespace std;
 
@@ -369,6 +370,67 @@ public:
     ///This does not include nested dropdowns.
     ///\returns std::size_t with the amount of options or values.
     size_t getNumOptions(){return options.size(); }
+    
+    ///\brief Returns the option gui using the option's  name
+    ///\param name the option name you want to get
+    ///\returns an ofxDropdownOption pointer
+    ofxDropdownOption* getOptionByName(const string& name);
+    
+    ///\brief Returns the option gui using the option's  value
+    ///\param value the option value you want to get
+    ///\returns an ofxDropdownOption pointer
+    ofxDropdownOption* getOptionByValue(const T& value);
+    
+    ///\brief Returns the option gui using the option's index
+    ///\param index the option's index you want to get
+    ///be careful with this as the index only takes into accout the options, but not any nested dropdown there might be. It is safer to get by name or value.
+    ///\returns an ofxDropdownOption pointer
+    ofxDropdownOption* getOptionByIndex(const size_t& index);
+    
+    // ---------------------------------------------------
+    // ----------------- Tooltips
+    // ---------------------------------------------------
+    
+    ///\brief set tooltips for this dropdown.
+    ///If there is no tooltip data for any of the tooltip options, including nested dropdowns
+    ///the json object will get populated with empty strings so it is easier to fill out.
+    ///Make sure to save the json back to disk in order to save this auto generated json.
+    ///\param json the json object containing the tooltip data
+    virtual void setupTooltip(ofJson & json) override;
+    
+    ///\brief set tooltips for this dropdown.
+    ///If there is no tooltip data for any of the tooltip options, including nested dropdowns
+    ///the json file will get populated with empty strings so it is easier to fill out.
+    ///If any option does not have a tooltip it will be saved into the same json file in a non destructive way (what ever was there is there will be kept.
+    ///\param json file path to the json file
+    void setupTooltip(const string& jsonFilePath);
+    
+    ///\ reset all tooltips. This works recursively with any nested dropdown
+    void resetTooltips();
+    
+    
+    ///\brief Add a tooltip for the passed value
+    ///\param value The value for which you want to add tthe tooltip
+    void addTooltip(T value, const string& text);
+    
+    ///\brief Add a tooltip for the passed value
+    ///\param option The name for the option for which you want to add tthe tooltip
+    void addTooltip(const string& option, const string& text);
+    
+    
+    ///\brief Enable tooltips. This works recursively with any nested dropdown
+    virtual void enableTooltip() override;
+    ///\brief Disable tooltips. This works recursively with any nested dropdown
+    virtual void disableTooltip() override;
+    
+    ///\brief check if tooltips are enabled
+    ///\return boolean. true when the tooltip is enabled, false otherwise
+    bool isTooltipEnabled() ;
+    
+    ///\brief Draw the tooltips.
+    ///This needs to be called independently and after the dropdown and gui are drawn,
+    ///otherwise the tooltips might get occluded by the gui.
+    virtual void drawTooltip() override;
     
     
     

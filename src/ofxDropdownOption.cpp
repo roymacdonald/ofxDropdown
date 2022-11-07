@@ -7,7 +7,7 @@ ofxDropdownOption::ofxDropdownOption(ofParameter<bool> _bVal, float width, float
 }
 
 ofxDropdownOption::~ofxDropdownOption(){
-//	value.removeListener(this,&ofxDropdownOption::valueChanged);
+
 }
 
 ofxDropdownOption * ofxDropdownOption::setup(ofParameter<bool> _bVal, float width, float height){
@@ -17,8 +17,6 @@ ofxDropdownOption * ofxDropdownOption::setup(ofParameter<bool> _bVal, float widt
 	b.height = height;
 	bGuiActive = false;
 	value.makeReferenceTo(_bVal);
-//	checkboxRect.set(1, 1, b.height - 2, b.height - 2);
-
     
     listener = value.newListener(this,&ofxDropdownOption::valueChanged);
 	registerMouseEvents();
@@ -121,14 +119,9 @@ void ofxDropdownOption::render(){
 			bg.setFillColor(thisBackgroundColor);
 		}
 	}
-//    if(!_bUseTexture){
-        bg.draw();
-//    }
-//	fg.draw();
 
-//	if( value ){
-//		cross.draw();
-//	}
+    bg.draw();
+
 
 	ofColor c = ofGetStyle().color;
 	ofBlendMode blendMode = ofGetStyle().blendingMode;
@@ -150,6 +143,26 @@ void ofxDropdownOption::render(){
 	}
 }
 
+void ofxDropdownOption::drawTooltip(){
+    if( !bIsOver || !bTooltipsEnabled ||
+       tooltipText.empty()){
+           return;
+       }
+    float x = ofGetMouseX();
+    float y = ofGetMouseY();
+           if(b.inside(x, y) == false) return;
+    
+           
+    if(x > ofGetWidth() - tooltipRect.width){
+        x = ofGetWidth() - tooltipRect.width;
+    }
+    y = y - tooltipRect.y + 20;
+    
+    ofDrawBitmapStringHighlight(tooltipText, x, y , ofColor::lightYellow, ofColor::black);
+    
+}
+
+
 //bool ofxDropdownOption::operator=(bool v){
 //	value = v;
 //	return v;
@@ -169,7 +182,6 @@ void ofxDropdownOption::valueChanged(bool & value){
 }
 
 void ofxDropdownOption::enableElement() {
-//	bGuiActive = false;
 	value.setWithoutEventNotifications(true);
 	setNeedsRedraw();
 }
@@ -188,19 +200,9 @@ void ofxDropdownOption::select()
 
 void ofxDropdownOption::deselect()
 {
-//	cout << "ofxDropdownOption::deselect " << getName() << "\n";
     value.setWithoutEventNotifications(false);
     setNeedsRedraw();
 }
-
-
-
-//
-//void ofxDropdownOption::setState(State state)
-//{
-//	_state = state;
-//	setNeedsRedraw();
-//}
 
 
 bool ofxDropdownOption::setValue(float mx, float my, bool bCheck){
@@ -266,4 +268,36 @@ void ofxDropdownOption::setRenderName(bool bRender){
 
 bool ofxDropdownOption::isRenderingName(){
     return _bRenderName;
+}
+
+void ofxDropdownOption::enableTooltip(){
+    bTooltipsEnabled = true;
+}
+
+void ofxDropdownOption::disableTooltip(){
+    bTooltipsEnabled = false;
+}
+
+bool ofxDropdownOption::isTooltipEnabled(){
+    return bTooltipsEnabled;
+}
+
+void ofxDropdownOption::setupTooltip(ofJson & json){
+    removeTooltip();
+    if(json.contains(getName())){
+        setTooltipText(json[getName()]);
+    }else{
+        json[getName()] = "";
+    }
+}
+
+void ofxDropdownOption::setTooltipText(const string& text){
+    tooltipText = text;
+    ofBitmapFont bf;
+    tooltipRect = bf.getBoundingBox(text, 0, 0);
+}
+void ofxDropdownOption::removeTooltip(){
+    disableTooltip();
+    tooltipText = "";
+    tooltipRect.set(0, 0, 0, 0);
 }
