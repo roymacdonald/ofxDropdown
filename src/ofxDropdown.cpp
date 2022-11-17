@@ -39,6 +39,9 @@ ofxDropdown_<T>::~ofxDropdown_(){
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float height ){
+#ifdef USE_OFX_GUI_TOOLTIP
+        guiElement = this;
+#endif
     if (bIsSetup){
         ofLogWarning("ofxDropdown_<T>::setup" ) << "Dropdown \"name\" is already setup. Nothing will be done";
         return this;
@@ -781,6 +784,7 @@ ofParameterGroup& ofxDropdown_<T>::getDropdownParameters(){
     return dropdownParams;
 }
 
+#ifdef USE_OFX_GUI_TOOLTIP
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::setupTooltip(ofJson &json){
@@ -806,13 +810,7 @@ void ofxDropdown_<T>::setupTooltip(ofJson &json){
     }
     enableTooltip();
 }
-//--------------------------------------------------------------
-template<class T>
-void ofxDropdown_<T>::setupTooltip(const string& jsonFilePath){
-    if(ofFile::doesFileExist(jsonFilePath)){
-        setupTooltip(ofLoadJson(jsonFilePath));
-    }
-}
+
 
 //--------------------------------------------------------------
 template<class T>
@@ -883,16 +881,13 @@ void ofxDropdown_<T>::disableTooltip(){
         }
     }
 }
-//--------------------------------------------------------------
-template<class T>
-bool ofxDropdown_<T>::isTooltipEnabled(){
-    return bTooltipsEnabled;
-}
 
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::drawTooltip(){
+//    cout << "ofxDropdown_<T>::drawTooltip " << getName() << "\n";
     if(bGroupEnabled){
+        
         for(auto& c: childDropdowns)
         {
             if(c) c->drawTooltip();
@@ -910,7 +905,7 @@ void ofxDropdown_<T>::drawTooltip(){
     }
     
 }
-
+#endif
 //--------------------------------------------------------------
 template<class T>
 ofxDropdownOption* ofxDropdown_<T>::getOptionByName(const string& name){

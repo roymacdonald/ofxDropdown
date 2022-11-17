@@ -3,11 +3,22 @@
 #include "ofxToggle.h"
 #include "ofImage.h"
 #include "ofJson.h"
+#ifdef USE_OFX_GUI_TOOLTIP
+#include "ofxGuiTooltipBase.h"
+#endif
 
-class ofxDropdownOption : public ofxBaseGui{
+class ofxDropdownOption : public ofxBaseGui
+#ifdef USE_OFX_GUI_TOOLTIP
+, public ofxGuiTooltipBase
+#endif
+{
   
 public:
-	ofxDropdownOption(){}
+	ofxDropdownOption(){
+#ifdef USE_OFX_GUI_TOOLTIP
+        guiElement = this;
+#endif
+    }
 	virtual ~ofxDropdownOption();
 	
 	void enableElement();
@@ -53,26 +64,15 @@ public:
     bool loadTexture(const std::string& filepath);
     bool saveTexture(const std::string& filepath);
     
-    virtual void enableTooltip();
-    virtual void disableTooltip();
-    bool isTooltipEnabled();
-    
-    
-    virtual void setupTooltip(ofJson & json);
-    void setTooltipText(const std::string& text);
-    void removeTooltip();
-    
-    virtual void drawTooltip();
     
 protected:
 	void generateNameTextMesh(const ofRectangle& rect);
     
-    bool bTooltipsEnabled = false;
-	
-    std::string tooltipText;
-    ofRectangle tooltipRect;
-    
-    
+#ifdef USE_OFX_GUI_TOOLTIP
+    virtual bool isOver() override{
+        return bIsOver;
+    }
+#endif
 
 	virtual void render() override;
 

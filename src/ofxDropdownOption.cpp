@@ -3,6 +3,9 @@
 using namespace std;
 
 ofxDropdownOption::ofxDropdownOption(ofParameter<bool> _bVal, float width, float height){
+#ifdef USE_OFX_GUI_TOOLTIP
+        guiElement = this;
+#endif
 	setup(_bVal,width,height);
 }
 
@@ -143,34 +146,6 @@ void ofxDropdownOption::render(){
 	}
 }
 
-void ofxDropdownOption::drawTooltip(){
-    if( !bIsOver || !bTooltipsEnabled ||
-       tooltipText.empty()){
-           return;
-       }
-    float x = ofGetMouseX();
-    float y = ofGetMouseY();
-           if(b.inside(x, y) == false) return;
-    
-           
-    if(x > ofGetWidth() - tooltipRect.width){
-        x = ofGetWidth() - tooltipRect.width;
-    }
-    y = y - tooltipRect.y + 20;
-    
-    ofDrawBitmapStringHighlight(tooltipText, x, y , ofColor::lightYellow, ofColor::black);
-    
-}
-
-
-//bool ofxDropdownOption::operator=(bool v){
-//	value = v;
-//	return v;
-//}
-//
-//ofxDropdownOption::operator const bool & (){
-//	return value;
-//}
 
 
 ofAbstractParameter & ofxDropdownOption::getParameter(){
@@ -270,34 +245,5 @@ bool ofxDropdownOption::isRenderingName(){
     return _bRenderName;
 }
 
-void ofxDropdownOption::enableTooltip(){
-    bTooltipsEnabled = true;
-}
 
-void ofxDropdownOption::disableTooltip(){
-    bTooltipsEnabled = false;
-}
 
-bool ofxDropdownOption::isTooltipEnabled(){
-    return bTooltipsEnabled;
-}
-
-void ofxDropdownOption::setupTooltip(ofJson & json){
-    removeTooltip();
-    if(json.contains(getName())){
-        setTooltipText(json[getName()]);
-    }else{
-        json[getName()] = "";
-    }
-}
-
-void ofxDropdownOption::setTooltipText(const string& text){
-    tooltipText = text;
-    ofBitmapFont bf;
-    tooltipRect = bf.getBoundingBox(text, 0, 0);
-}
-void ofxDropdownOption::removeTooltip(){
-    disableTooltip();
-    tooltipText = "";
-    tooltipRect.set(0, 0, 0, 0);
-}
