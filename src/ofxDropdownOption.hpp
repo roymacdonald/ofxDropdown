@@ -2,13 +2,23 @@
 
 #include "ofxToggle.h"
 #include "ofImage.h"
-template<typename T>
-class ofxDropdown_;
+#include "ofJson.h"
+#ifdef USE_OFX_GUI_TOOLTIP
+#include "ofxGuiTooltipBase.h"
+#endif
 
-class ofxDropdownOption : public ofxBaseGui{
-
+class ofxDropdownOption : public ofxBaseGui
+#ifdef USE_OFX_GUI_TOOLTIP
+, public ofxGuiTooltipBase
+#endif
+{
+  
 public:
-	ofxDropdownOption(){}
+	ofxDropdownOption(){
+#ifdef USE_OFX_GUI_TOOLTIP
+        guiElement = this;
+#endif
+    }
 	virtual ~ofxDropdownOption();
     template<typename T>
     friend class ofxDropdown_;
@@ -21,11 +31,11 @@ public:
 	ofxDropdownOption * setup(const std::string& toggleName, bool _bVal, float width = defaultWidth, float height = defaultHeight);
 	
 
-	virtual bool mouseMoved(ofMouseEventArgs & args);
-	virtual bool mousePressed(ofMouseEventArgs & args);
-	virtual bool mouseDragged(ofMouseEventArgs & args);
-	virtual bool mouseReleased(ofMouseEventArgs & args);
-	virtual bool mouseScrolled(ofMouseEventArgs & args){return false;}
+	virtual bool mouseMoved(ofMouseEventArgs & args)override;
+	virtual bool mousePressed(ofMouseEventArgs & args)override;
+	virtual bool mouseDragged(ofMouseEventArgs & args)override;
+	virtual bool mouseReleased(ofMouseEventArgs & args)override;
+	virtual bool mouseScrolled(ofMouseEventArgs & args)override{return false;}
 	
 
 	template<class ListenerClass, typename ListenerMethod>
@@ -43,8 +53,7 @@ public:
 	virtual void deselect();
     bool isSelected();
 
-
-	virtual ofAbstractParameter & getParameter();
+	virtual ofAbstractParameter & getParameter() override;
 
     
     void setUseTexture(bool useTexture);
@@ -60,19 +69,21 @@ public:
 
 protected:
 	void generateNameTextMesh(const ofRectangle& rect);
-	
     
-    std::string dropdownValue;
+#ifdef USE_OFX_GUI_TOOLTIP
+    virtual bool isOver() override{
+        return bIsOver;
+    }
+#endif
 
+	virtual void render() override;
 
-	virtual void render();
-
-    ofParameter<bool> value;
+	ofParameter<bool> value;
 	bool bGuiActive;
 	bool bIsOver = false;
 	
-	bool setValue(float mx, float my, bool bCheck);
-	void generateDraw();
+	bool setValue(float mx, float my, bool bCheck) override;
+	void generateDraw() override;
 	void valueChanged(bool & value);
 	ofPath bg;
 	ofVboMesh textMesh;

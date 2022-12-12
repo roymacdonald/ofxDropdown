@@ -14,13 +14,19 @@
 
 #include "ofxDropdownOption.hpp"
 
+#ifdef USE_OFX_GUI_TOOLTIP
+#include "ofxGuiTooltipBase.h"
+#endif
+
+#include "ofJson.h"
 
 using namespace std;
 
 
 
 template<class T>
-class ofxDropdown_: public ofxDropdownOption{
+class ofxDropdown_: public ofxDropdownOption
+{
 
 public:
     virtual ~ofxDropdown_();
@@ -30,7 +36,11 @@ public:
     
     /// default constructor.
     /// \warning You will need to call the one of the setup class methods to be able to use this dropdown
-	ofxDropdown_(){};
+	ofxDropdown_(){
+#ifdef USE_OFX_GUI_TOOLTIP
+        guiElement = this;
+#endif
+    };
     
     /// \brief constructor that calls setup function with same parameters
     /// Dropdown will be empty. you should add values with the add(...) function
@@ -336,6 +346,8 @@ public:
     std::vector<unique_ptr<ofxDropdown_>>& getOwnedDropdowns(){return ownedDropdowns;}
     std::vector<unique_ptr<ofxDropdownOption>>& getOwnedChildren(){return ownedChildren;}
     
+    ofxGuiGroup& getChildGuiGroup(){ return group;}
+    const ofxGuiGroup& getChildGuiGroup() const{ return group;}
     
     // ---------------------------------------------------
     // ----------------- Overriden mouse callbacks. Dont call these manually
@@ -370,7 +382,24 @@ public:
     ///\returns std::size_t with the amount of options or values.
     size_t getNumOptions(){return options.size(); }
     
+    ///\brief Returns the option gui using the option's  name
+    ///\param name the option name you want to get
+    ///\returns an ofxDropdownOption pointer
+    ofxDropdownOption* getOptionByName(const string& name);
+    
+    ///\brief Returns the option gui using the option's  value
+    ///\param value the option value you want to get
+    ///\returns an ofxDropdownOption pointer
+    ofxDropdownOption* getOptionByValue(const T& value);
+    
+    ///\brief Returns the option gui using the option's index
+    ///\param index the option's index you want to get
+    ///be careful with this as the index only takes into accout the options, but not any nested dropdown there might be. It is safer to get by name or value.
+    ///\returns an ofxDropdownOption pointer
+    ofxDropdownOption* getOptionByIndex(const size_t& index);
+
     ///\brief returns all the selected values when multiselection is enabled
+    ///\return a vector with all the selected values
     const vector<T>&  getAllSelected();
     
     
@@ -397,6 +426,47 @@ public:
     ///\param newName the new name you want to give to the option
     ///\return boolean. True if it was able to change the name, false otherwise. False most probably will happen when the passed name is not found as part of the dropdown
     bool updateOptionName(const string& currentName, const string& newName);
+    
+    
+#ifdef USE_OFX_GUI_TOOLTIP
+
+    // ---------------------------------------------------
+    // ----------------- Tooltips
+    // ---------------------------------------------------
+    
+    ///\brief set tooltips for this dropdown.
+    ///If there is no tooltip data for any of the tooltip options, including nested dropdowns
+    ///the json object will get populated with empty strings so it is easier to fill out.
+    ///Make sure to save the json back to disk in order to save this auto generated json.
+    ///\param json the json object containing the tooltip data
+    virtual void setupTooltip(ofJson & json) override;
+    
+    
+    ///\ reset all tooltips. This works recursively with any nested dropdown
+    virtual void resetTooltips()override;
+    
+    
+    ///\brief Add a tooltip for the passed value
+    ///\param value The value for which you want to add tthe tooltip
+    void addTooltip(T value, const string& text);
+    
+    ///\brief Add a tooltip for the passed value
+    ///\param option The name for the option for which you want to add tthe tooltip
+    void addTooltip(const string& option, const string& text);
+    
+    
+    ///\brief Enable tooltips. This works recursively with any nested dropdown
+    virtual void enableTooltip() override;
+    ///\brief Disable tooltips. This works recursively with any nested dropdown
+    virtual void disableTooltip() override;
+    
+    
+    ///\brief Draw the tooltips.
+    ///This needs to be called independently and after the dropdown and gui are drawn,
+    ///otherwise the tooltips might get occluded by the gui.
+    virtual void drawTooltip() override;
+#endif
+    
     
 protected:
 	

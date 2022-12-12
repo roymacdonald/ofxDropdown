@@ -3,6 +3,9 @@
 using namespace std;
 
 ofxDropdownOption::ofxDropdownOption(ofParameter<bool> _bVal, float width, float height){
+#ifdef USE_OFX_GUI_TOOLTIP
+        guiElement = this;
+#endif
 	setup(_bVal,width,height);
 }
 
@@ -117,14 +120,9 @@ void ofxDropdownOption::render(){
 			bg.setFillColor(thisBackgroundColor);
 		}
 	}
-//    if(!_bUseTexture){
-        bg.draw();
-//    }
-//	fg.draw();
 
-//	if( value ){
-//		cross.draw();
-//	}
+    bg.draw();
+
 
 	ofColor c = ofGetStyle().color;
 	ofBlendMode blendMode = ofGetStyle().blendingMode;
@@ -146,14 +144,6 @@ void ofxDropdownOption::render(){
 	}
 }
 
-//bool ofxDropdownOption::operator=(bool v){
-//	value = v;
-//	return v;
-//}
-//
-//ofxDropdownOption::operator const bool & (){
-//	return value;
-//}
 
 
 ofAbstractParameter & ofxDropdownOption::getParameter(){
@@ -165,7 +155,6 @@ void ofxDropdownOption::valueChanged(bool & value){
 }
 
 void ofxDropdownOption::enableElement() {
-//	bGuiActive = false;
 	value.setWithoutEventNotifications(true);
 	setNeedsRedraw();
 }
@@ -184,7 +173,6 @@ void ofxDropdownOption::select()
 
 void ofxDropdownOption::deselect()
 {
-//	cout << "ofxDropdownOption::deselect " << getName() << "\n";
     value.setWithoutEventNotifications(false);
     setNeedsRedraw();
 }
@@ -192,13 +180,6 @@ void ofxDropdownOption::deselect()
 bool ofxDropdownOption::isSelected(){
     return value.get();
 }
-
-//
-//void ofxDropdownOption::setState(State state)
-//{
-//	_state = state;
-//	setNeedsRedraw();
-//}
 
 
 bool ofxDropdownOption::setValue(float mx, float my, bool bCheck){
