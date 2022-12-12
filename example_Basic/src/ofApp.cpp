@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 	
-	gui.setup("DROPDOWNS", "DropdownsSettings.xml");
+	gui.setup("DROPDOWNS", "DropdownsSettings.json");
 	gui.setPosition(20,20);
 	
 	strDropdown =  make_unique<ofxDropdown>("String Dropdown");
@@ -72,9 +72,9 @@ void ofApp::keyReleased(int key){
     if(key >= '0' && key <= '9'){
         intOptions = key - '0';
 	}else if(key == 's'){
-		gui.saveToFile("DropdownsSettings.xml");
+		gui.saveToFile("DropdownsSettings.json");
 	}else if(key == 'l'){
-		gui.loadFromFile("DropdownsSettings.xml");
+		gui.loadFromFile("DropdownsSettings.json");
 	}
 }
 //--------------------------------------------------------------
