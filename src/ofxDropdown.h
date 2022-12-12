@@ -373,6 +373,31 @@ public:
     ///\brief returns all the selected values when multiselection is enabled
     const vector<T>&  getAllSelected();
     
+    
+    // ---------------------------------------------------
+    // ----------------- setters
+    // ---------------------------------------------------
+    
+    ///\brief Sets the name (the string that gets drawn in the gui) by passing the value of the option
+    ///\param value the value of the option. This is used to search for the option
+    ///\param newName the new name you want to give to the option
+    ///\return boolean. True if it was able to change the name, false otherwise. False most probably will happen when the passed value is not found as part of the dropdown
+    bool setOptionNameByValue(const T& value, const string& newName);
+    
+    
+    ///\brief Sets the name (the string that gets drawn in the gui) by passing the value of the option
+    ///\param index the index (position) of the option. index 0 is the first option shown.
+    ///\param newName the new name you want to give to the option
+    ///\return boolean. True if it was able to change the name, false otherwise. False most probably will happen when the passed index is out of bounds
+    bool setOptionNameByIndex(const size_t& index, const string& newName);
+    
+    
+    ///\brief Sets the name (the string that gets drawn in the gui) by passing the name of the option
+    ///\param currentName the current name of the option you want to update
+    ///\param newName the new name you want to give to the option
+    ///\return boolean. True if it was able to change the name, false otherwise. False most probably will happen when the passed name is not found as part of the dropdown
+    bool updateOptionName(const string& currentName, const string& newName);
+    
 protected:
 	
     ofEventListeners paramsListeners;

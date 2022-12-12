@@ -828,6 +828,47 @@ const vector<T> & ofxDropdown_<T>::getAllSelected(){
     return allSelectedValues;
 }
 
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::setOptionNameByValue(const T& value, const string& newName){
+    auto it = find(values.begin(), values.end(), value);
+    if(it != values.end()){// it was found. it should be found anyways but better to double check
+        auto index = std::distance(values.begin(), it);
+        return setOptionNameByIndex(index, newName);
+    }
+    return false;
+}
+
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::setOptionNameByIndex(const size_t& index, const string& newName){
+    
+    if(index < options.size()){
+        auto control = group.getControl(options[index]);
+        
+        if(control != nullptr){
+            control->getParameter().setName(newName);
+            options[index] = newName;
+            setNeedsRedraw();
+            return  true;
+        }
+    }
+    return false;
+}
+
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::updateOptionName(const string& currentName, const string& newName){
+    auto it = find(options.begin(), options.end(), currentName);
+    if(it != options.end()){// it was found. it should be found anyways but better to double check
+        auto index = std::distance(options.begin(), it);
+        return setOptionNameByIndex(index, newName);
+    }
+    return false;
+}
+
+
+
 //template class ofxDropdown_<uint8_t>;
 #ifndef TARGET_WIN32
 template class ofxDropdown_<ofFile>;
