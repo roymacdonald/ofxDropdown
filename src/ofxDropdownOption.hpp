@@ -36,9 +36,8 @@ public:
 	void select();
 	
 	virtual void deselect();
+    bool isSelected();
 
-//	bool operator=(bool v);
-//	operator const bool & ();
 
 	virtual ofAbstractParameter & getParameter();
 
@@ -53,28 +52,24 @@ public:
     
     bool loadTexture(const std::string& filepath);
     bool saveTexture(const std::string& filepath);
+
 protected:
 	void generateNameTextMesh(const ofRectangle& rect);
 	
-	
-//	enum State {
-//		UNSELECTED=0,
-//		OVER,
-//		SELECTED
-//	}_state;
-//
-//	void setState(State state);
-//
+    
+    std::string dropdownValue;
+
+
 	virtual void render();
-//	ofRectangle checkboxRect;
-	ofParameter<bool> value;
+
+    ofParameter<bool> value;
 	bool bGuiActive;
 	bool bIsOver = false;
 	
 	bool setValue(float mx, float my, bool bCheck);
 	void generateDraw();
 	void valueChanged(bool & value);
-	ofPath bg;//,fg;//,cross;
+	ofPath bg;
 	ofVboMesh textMesh;
     
     ofImage texture;

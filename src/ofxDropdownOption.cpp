@@ -7,7 +7,6 @@ ofxDropdownOption::ofxDropdownOption(ofParameter<bool> _bVal, float width, float
 }
 
 ofxDropdownOption::~ofxDropdownOption(){
-//	value.removeListener(this,&ofxDropdownOption::valueChanged);
 }
 
 ofxDropdownOption * ofxDropdownOption::setup(ofParameter<bool> _bVal, float width, float height){
@@ -17,8 +16,6 @@ ofxDropdownOption * ofxDropdownOption::setup(ofParameter<bool> _bVal, float widt
 	b.height = height;
 	bGuiActive = false;
 	value.makeReferenceTo(_bVal);
-//	checkboxRect.set(1, 1, b.height - 2, b.height - 2);
-
     
     listener = value.newListener(this,&ofxDropdownOption::valueChanged);
 	registerMouseEvents();
@@ -37,7 +34,6 @@ ofxDropdownOption * ofxDropdownOption::setup(const std::string& toggleName, bool
 bool ofxDropdownOption::mouseMoved(ofMouseEventArgs & args){
 	if(isGuiDrawing() && b.inside(args)){
 		bIsOver = true;
-//		return true;
 	}else{
 		bIsOver = false;
 	}
@@ -193,7 +189,9 @@ void ofxDropdownOption::deselect()
     setNeedsRedraw();
 }
 
-
+bool ofxDropdownOption::isSelected(){
+    return value.get();
+}
 
 //
 //void ofxDropdownOption::setState(State state)
