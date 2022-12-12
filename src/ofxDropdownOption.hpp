@@ -72,6 +72,10 @@ public:
     bool saveTexture(const std::string& filepath);
 
 protected:
+    
+    bool _bSelectOnMouseRelease = false;
+    
+    
 	void generateNameTextMesh(const ofRectangle& rect);
     
     std::string dropdownValue;

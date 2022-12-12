@@ -44,13 +44,18 @@ bool ofxDropdownOption::mouseMoved(ofMouseEventArgs & args){
 }
 
 bool ofxDropdownOption::mousePressed(ofMouseEventArgs & args){
-	if(setValue(args.x, args.y, true)){
-		bIsOver = true;
-		return true;
-	}else{
-		bIsOver = false;
-		return false;
-	}
+    if(_bSelectOnMouseRelease){
+        bIsOver = bGuiActive = (isGuiDrawing() && b.inside(args));
+         return bIsOver;
+    }else{
+        if(setValue(args.x, args.y, true)){
+            bIsOver = true;
+            return true;
+        }else{
+            bIsOver = false;
+            return false;
+        }
+    }
 }
 
 bool ofxDropdownOption::mouseDragged(ofMouseEventArgs & args){
@@ -64,15 +69,22 @@ bool ofxDropdownOption::mouseDragged(ofMouseEventArgs & args){
 }
 
 bool ofxDropdownOption::mouseReleased(ofMouseEventArgs & args){
-	bool wasGuiActive = bGuiActive;
-	bGuiActive = false;
-	if(wasGuiActive && b.inside(args)){
-		bIsOver = true;
-		return true;
-	}else{
-		bIsOver = false;
-		return false;
-	}
+    if(_bSelectOnMouseRelease){
+        bIsOver = false;
+        auto ret = setValue(args.x, args.y, true);
+        bGuiActive = false;
+        return ret;
+    }else{
+        bool wasGuiActive = bGuiActive;
+        bGuiActive = false;
+        if(wasGuiActive && b.inside(args)){
+            bIsOver = true;
+            return true;
+        }else{
+            bIsOver = false;
+            return false;
+        }
+    }
 }
 
 void ofxDropdownOption::generateDraw(){
@@ -188,16 +200,27 @@ bool ofxDropdownOption::setValue(float mx, float my, bool bCheck){
         bGuiActive = false;
         return false;
     }
-    if( bCheck ){
-        if( b.inside(mx, my) ){
-            bGuiActive = true;
-        }else{
-            bGuiActive = false;
+    if(_bSelectOnMouseRelease){
+        if(b.inside(mx, my)){
+              if( bCheck ){
+                  if( bGuiActive ){
+                      value =  !value;
+                  }
+              }
+              return true;
+          }
+    }else{
+        if( bCheck ){
+            if( b.inside(mx, my) ){
+                bGuiActive = true;
+            }else{
+                bGuiActive = false;
+            }
         }
-    }
-    if( bGuiActive ){
-        value =  !value;
-        return true;
+        if( bGuiActive ){
+            value =  !value;
+            return true;
+        }
     }
     return false;
 }
