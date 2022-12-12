@@ -244,8 +244,10 @@ public:
 	}
 
     
-    /// \brief ofEvent called whenever the dropdown selection changes. The data passed along with it is the displayed name of the option that changed
+    /// \brief ofEvent called whenever the dropdown selection changes. The data passed along with itis the displayed name of the option that changed
 	ofEvent<std::string> change_E;
+    /// \brief ofEvent called whenever the dropdown selection changes. The data passed along with it is the of the value that changed (not necesarily what is shown in the dropdown)
+    ofEvent<T> change_E_value;
     
     /// \brief ofEvent called whenever the dropdown gets hidden. The data passed along with it is the name of the dropdown.
 	ofEvent<std::string> dropdownHidden_E;
@@ -368,7 +370,8 @@ public:
     ///\returns std::size_t with the amount of options or values.
     size_t getNumOptions(){return options.size(); }
     
-    
+    ///\brief returns all the selected values when multiselection is enabled
+    const vector<T>&  getAllSelected();
     
 protected:
 	
@@ -429,6 +432,13 @@ protected:
 	
 	void _updateGroupWidth();
 	
+    
+    vector<T> allSelectedValues;
+    
+    void _setDropdownOptionValue(ofxDropdownOption* o, const T& val);
+    T _getDropdownOptionValue(ofxDropdownOption* o);
+    
+    
 private:
 	
 	std::vector<ofxDropdown_ *> childDropdowns;

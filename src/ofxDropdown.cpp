@@ -40,7 +40,7 @@ ofxDropdown_<T>::~ofxDropdown_(){
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float height ){
     if (bIsSetup){
-        ofLogWarning("ofxDropdown_<T>::setup" ) << "Dropdown \"name\" is already setup. Nothing will be done";
+        ofLogWarning("ofxDropdown_<T>::setup" ) << "Dropdown \"" << name << "\" is already setup. Nothing will be done";
         return this;
     }
         
@@ -50,7 +50,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	selectedValue.setName(name);
 	setlectedValueListener = selectedValue.newListener(this, &ofxDropdown_<T>::selectedValueChanged);
 	
-	group.setup();
+	group.setup(name);
 	group.disableHeader();
 	group.setParent(this);
 	group.unregisterMouseEvents();
@@ -76,7 +76,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, float height){
     if (bIsSetup){
-        ofLogWarning("ofxDropdown_<T>::setup" ) << "Dropdown \"name\" is already setup. Nothing will be done";
+        ofLogWarning("ofxDropdown_<T>::setup" ) << "Dropdown \"" << param.getName() << "\" is already setup. Nothing will be done";
         return this;
     }
 	selectedValue.makeReferenceTo(param);
@@ -105,16 +105,32 @@ void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify
 	if(index < values.size()){
 		selectedValue = values[index];
 		selectedOption = options[index];
+        
 		if(!bMultiselection){
-			auto control = group.getControl(options[index]);
+            auto control = group.getControl(options[index]);
 			if(control != nullptr){
 				disableSiblings(&group,control);
 			}
-		}
+            allSelectedValues.clear();
+            allSelectedValues.push_back(selectedValue);
+        }else{
+            
+            allSelectedValues.clear();
+            for(auto& c: ownedChildren){
+                if(c->isSelected()){
+                    allSelectedValues.push_back(_getDropdownOptionValue(c.get()));
+                }
+            }
+            
+        }
 		if(bCollapseOnSelection){
 			hideDropdown();
 		}
-		if(bNotify) ofNotifyEvent(change_E, options[index], this);
+        
+        if(bNotify) {
+            ofNotifyEvent(change_E, options[index], this);
+            ofNotifyEvent(change_E_value, values[index], this);
+        }
 	}
 }
 //--------------------------------------------------------------
@@ -191,6 +207,8 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
 	auto o = ownedChildren.back().get();
 	if(o){
 		o->setup(option, value == selectedValue.get());
+        _setDropdownOptionValue(o, value);
+        
 		groupListeners.push(o->getParameter().template cast<bool>().newListener(this, &ofxDropdown_::groupChanged));
     
 		group.add(o);
@@ -203,6 +221,30 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
 
     return this;
 }
+
+#ifndef TARGET_WIN32
+template<>
+void ofxDropdown_<ofFile>::_setDropdownOptionValue(ofxDropdownOption* o, const ofFile& val){
+    o->dropdownValue = val.path();
+}
+#endif
+template<class T>
+void ofxDropdown_<T>::_setDropdownOptionValue(ofxDropdownOption* o, const T& val){
+    o->dropdownValue = ofToString(val);
+}
+
+template<class T>
+T ofxDropdown_<T>::_getDropdownOptionValue(ofxDropdownOption* o){
+    return ofFromString<T>(o->dropdownValue);
+}
+
+#ifndef TARGET_WIN32
+template<>
+ofFile ofxDropdown_<ofFile>::_getDropdownOptionValue(ofxDropdownOption* o){
+    return ofFile(o->dropdownValue);
+}
+#endif
+
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::add(const vector<T> & options){
@@ -558,7 +600,8 @@ void ofxDropdown_<T>::setDropdownElementsWidth(float width)
 //--------------------------------------------------------------
 template<class T>
 ofAbstractParameter & ofxDropdown_<T>::getParameter(){
-	return selectedValue;
+    return group.getParameter();
+//	return selectedValue;
 }
 
 //--------------------------------------------------------------
@@ -780,8 +823,10 @@ ofParameterGroup& ofxDropdown_<T>::getDropdownParameters(){
     return dropdownParams;
 }
 //--------------------------------------------------------------
-
-
+template<class T>
+const vector<T> & ofxDropdown_<T>::getAllSelected(){
+    return allSelectedValues;
+}
 
 //template class ofxDropdown_<uint8_t>;
 #ifndef TARGET_WIN32
