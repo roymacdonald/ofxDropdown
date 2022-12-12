@@ -7,6 +7,9 @@
 #include "ofxGuiTooltipBase.h"
 #endif
 
+template<typename T>
+class ofxDropdown_;
+
 class ofxDropdownOption : public ofxBaseGui
 #ifdef USE_OFX_GUI_TOOLTIP
 , public ofxGuiTooltipBase
@@ -20,6 +23,7 @@ public:
 #endif
     }
 	virtual ~ofxDropdownOption();
+    
     template<typename T>
     friend class ofxDropdown_;
 	
@@ -69,6 +73,8 @@ public:
 
 protected:
 	void generateNameTextMesh(const ofRectangle& rect);
+    
+    std::string dropdownValue;
     
 #ifdef USE_OFX_GUI_TOOLTIP
     virtual bool isOver() override{
