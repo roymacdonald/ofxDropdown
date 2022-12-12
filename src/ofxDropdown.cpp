@@ -1126,18 +1126,28 @@ bool ofxDropdown_<T>::updateOptionName(const string& currentName, const string& 
 template<class T>
 void ofxDropdown_<T>::setEnableSelectOnMouseRelease(bool bEnable){
     _bSelectOnMouseRelease = bEnable;
+    for(auto c: childDropdowns){
+        if(c)c->setEnableSelectOnMouseRelease(bEnable);
+    }
+    for(auto& c: ownedDropdowns){
+        if(c)c->setEnableSelectOnMouseRelease(bEnable);
+    }
+    for(auto& c: ownedChildren){
+        if(c) c->_bSelectOnMouseRelease = bEnable;
+    }
+    
 }
 
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::enableSelectOnMouseRelease(){
-    _bSelectOnMouseRelease = true;
+    setEnableSelectOnMouseRelease(true);
 }
 
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::disableSelectOnMouseRelease(){
-    _bSelectOnMouseRelease = false;
+    setEnableSelectOnMouseRelease(false);
 }
 
 //--------------------------------------------------------------
