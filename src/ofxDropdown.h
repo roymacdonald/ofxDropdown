@@ -308,6 +308,7 @@ public:
     ///\brief Enumeration of the possible positions where you can make the dropdown to show.
     ///These are relative to the gui that contains the dropdown, so if you set it to DD_RIGHT, the dropdown will show at the right of the container gui.
     enum DropDownPosition{
+        DD_AUTO = 0,
         DD_RIGHT,
         DD_BELOW,
         DD_ABOVE,
@@ -403,6 +404,17 @@ public:
     const vector<T>&  getAllSelected();
     
     
+    ///\Checks if an element exists with the passed name
+    ///\param name the name of the element to check
+    ///\returns true if the dropdown holds the element with the passed name
+    bool containsName(const std::string& name) const;
+       
+    ///\Checks if an element exists with the passed value
+    ///\param value  the value of the element to check
+    ///\returns true if the dropdown holds the element with the passed value
+    bool containsValue(const T& value) const;
+
+
     // ---------------------------------------------------
     // ----------------- setters
     // ---------------------------------------------------
@@ -426,6 +438,26 @@ public:
     ///\param newName the new name you want to give to the option
     ///\return boolean. True if it was able to change the name, false otherwise. False most probably will happen when the passed name is not found as part of the dropdown
     bool updateOptionName(const string& currentName, const string& newName);
+    
+    
+    // ---------------------------------------------------
+    // ----------------- select on mouse release
+    // ---------------------------------------------------
+    ///\brief enables or disables select on mouse release.
+    ///This is mostly useful when using this addon on an iPad or touch device, as it feels more natural
+    ///This feature is disabled by default
+    ///\param bEnable boolean when true enables this feature, on false it disables it
+    void setEnableSelectOnMouseRelease(bool bEnable);
+    
+    ///\brief enables select on mouse release.
+    /// This is mostly useful when using this addon on an iPad or touch device, as it feels more natural
+    void enableSelectOnMouseRelease();
+    
+    ///\brief disables select on mouse release.
+    void disableSelectOnMouseRelease();
+    ///\brief check if the select on mouse release feature is either enabled or disabled;
+    ///\return boolean true if enable, false disabled
+    bool isEnabledSelectOnMouseRelease();
     
     
 #ifdef USE_OFX_GUI_TOOLTIP
@@ -490,7 +522,9 @@ protected:
 	
 	void disableSiblings(ofxBaseGui* parent, ofxBaseGui* child);
 	
-	DropDownPosition dropDownPosition = DD_RIGHT;
+    DropDownPosition dropDownPosition = DD_AUTO;
+    
+    void _setGroupAutoPosition();
 	
 	virtual void generateDraw() override;
 		
@@ -518,6 +552,18 @@ protected:
 	ofEventListener buttonListener;
     ofEventListener setlectedValueListener;
     
+    ofEventListeners guiGroupListeners;
+    
+    void enableGuiGroupMouseAndDraw();
+    void disableGuiGroupMouseAndDraw();
+    
+    void drawGuiGroup(ofEventArgs&);
+    bool scrollGroup(ofMouseEventArgs&);
+    bool groupMousePressed(ofMouseEventArgs & args);
+    bool groupMouseReleased(ofMouseEventArgs & args);
+    bool groupMouseDragged(ofMouseEventArgs & args);
+    
+    
 	ofPath arrow;
 	ofVboMesh optionTextMesh;
 	
@@ -542,7 +588,7 @@ private:
     
     bool bRegisteredForMouseEvents = false;
     bool bIsSetup = false;
-	
+    bool _bSelectOnMouseRelease = false;
 };
 
 

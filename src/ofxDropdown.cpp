@@ -321,6 +321,7 @@ void ofxDropdown_<T>::clear(){
 	ownedChildren.clear();
 	ownedDropdowns.clear();
     groupListeners.unsubscribeAll();
+    guiGroupListeners.unsubscribeAll();
     childDropdownListeners.unsubscribeAll();
     
 }
@@ -335,11 +336,56 @@ string ofxDropdown_<T>::getOptionAt(size_t index){
 }
 //--------------------------------------------------------------
 template<class T>
+void ofxDropdown_<T>::enableGuiGroupMouseAndDraw(){
+    int prio = int(defaultEventsPriority) - 200;
+    guiGroupListeners.push(ofEvents().draw.newListener(this, &ofxDropdown_::drawGuiGroup, int(OF_EVENT_ORDER_AFTER_APP) + 100 ));
+    
+    guiGroupListeners.push(ofEvents().mouseDragged.newListener(this, &ofxDropdown_::groupMouseDragged, prio));
+    guiGroupListeners.push(ofEvents().mouseMoved.newListener(&group, &ofxGuiGroup::mouseMoved, prio));
+    guiGroupListeners.push(ofEvents().mousePressed.newListener(this, &ofxDropdown_::groupMousePressed, prio));
+    guiGroupListeners.push(ofEvents().mouseReleased.newListener(this, &ofxDropdown_::groupMouseReleased, prio));
+    guiGroupListeners.push(ofEvents().mouseScrolled.newListener(this, &ofxDropdown_::scrollGroup, prio));
+    
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::disableGuiGroupMouseAndDraw(){
+    guiGroupListeners.unsubscribeAll();
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::_setGroupAutoPosition(){
+    auto s = group.getShape();
+    glm::vec2 p;
+    if(ofGetWidth() - b.getMaxX() >= s.width){
+        p.x = b.getMaxX();
+    }else if( b.getMinX() >= s.width){
+        p.x = b.getMinX() - s.width;
+    }else{
+        p.x = 0;
+    }
+    if(ofGetHeight() - b.getMaxY() >= s.height){
+        p.y = b.getMaxY();
+    }else if( b.getMinY() >= s.height){
+        p.y = b.getMinY() - s.height;
+    }else{
+        p.y = 0;
+    }
+
+    group.setPosition(p.x, p.y);
+}
+
+//--------------------------------------------------------------
+template<class T>
 void ofxDropdown_<T>::showDropdown(bool bDisableSiblings){
 	if(!bGroupEnabled){
         ofNotifyEvent(dropdownWillShow_E, this);
 		bGroupEnabled = true;
 		switch(dropDownPosition){
+            case DD_AUTO:
+                _setGroupAutoPosition();
+                break;
 			case DD_BELOW:
 				group.setPosition(b.x, b.getMaxY());	
 				break;
@@ -356,6 +402,7 @@ void ofxDropdown_<T>::showDropdown(bool bDisableSiblings){
 		if(bDisableSiblings){			
 			disableSiblings(getParent(), this);
 		}
+        enableGuiGroupMouseAndDraw();
 	}
 }
 
@@ -415,18 +462,64 @@ void ofxDropdown_<T>::deselect()
 }
 //--------------------------------------------------------------
 template<class T>
+bool ofxDropdown_<T>::scrollGroup(ofMouseEventArgs& args){
+    if(isShowingDropdown()){
+        if( !group.isMinimized() && group.getShape().inside(args.x, args.y)){
+            move({0, args.scrollY * 2, 0});
+            return true;
+        }else{
+            group.mouseScrolled(args);
+        }
+        return true;
+    }
+    return false;
+}
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::groupMouseDragged(ofMouseEventArgs & args){
+    if(isShowingDropdown()){
+        if(group.mouseDragged(args)){
+            
+            return true;
+        }
+        return true;
+    }
+    return false;
+}
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::groupMouseReleased(ofMouseEventArgs & args){
+    if(isShowingDropdown()){
+        if(group.mouseReleased(args)){
+            return true;
+        }
+        if(!b.inside(args)){
+            hideDropdown();
+            return true;
+        }
+        return true;
+    }
+    return false;
+}
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::groupMousePressed(ofMouseEventArgs & args){
+    if(isShowingDropdown()){
+        
+        if(!group.mousePressed(args))
+        {
+            hideDropdown();
+        }
+        return true;
+    }
+    return false;
+}
+
+//--------------------------------------------------------------
+template<class T>
 bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
 	if(ofxDropdownOption::mouseReleased(args) || b.inside(args)){
 		return true;
-	}
-	if(isShowingDropdown()){
-		if(group.mouseReleased(args)){
-			return true;
-		}
-		if(!b.inside(args)){
-			hideDropdown();
-			return true;
-		}
 	}
 	return false;
 }
@@ -436,14 +529,6 @@ bool ofxDropdown_<T>::mousePressed(ofMouseEventArgs & args){
     if(setValue(args.x, args.y, true)){
         return true;
     }
-	if(isShowingDropdown()){
-		bool r = group.mousePressed(args);;
-		if(!r)
-		{
-			hideDropdown();
-		}
-		return r;
-	}
 	return false;
 }
 //--------------------------------------------------------------
@@ -451,9 +536,6 @@ template<class T>
 bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
 	if(ofxDropdownOption::mouseMoved(args)){
 		return true;
-	}
-	if(isShowingDropdown()){
-		return group.mouseMoved(args);
 	}
 	return false;
 }
@@ -463,9 +545,6 @@ bool ofxDropdown_<T>::mouseDragged(ofMouseEventArgs & args){
 	if(ofxDropdownOption::mouseDragged(args)){
 		return true;
 	}
-	if(isShowingDropdown()){
-		return group.mouseDragged(args);
-	}
 	return false;
 }
 //--------------------------------------------------------------
@@ -473,14 +552,6 @@ template<class T>
 bool ofxDropdown_<T>::mouseScrolled(ofMouseEventArgs & args){
 	if(ofxDropdownOption::mouseScrolled(args)){
 		return true;
-	}
-	if(isShowingDropdown()){
-		if( !group.isMinimized() && group.getShape().inside(args.x, args.y)){
-			move({0, args.scrollY * 2, 0});
-			return true;
-		}else{
-			return group.mouseScrolled(args);
-		}
 	}
 	return false;
 }
@@ -519,6 +590,7 @@ void ofxDropdown_<T>::hideDropdown(bool bNotifyEvent){
 		if(bNotifyEvent){
 			ofNotifyEvent(dropdownHidden_E, n, this);
 		}
+        disableGuiGroupMouseAndDraw();
 	}
 }
 //--------------------------------------------------------------
@@ -575,13 +647,24 @@ void ofxDropdown_<T>::generateDraw(){
 //	});	
 	
 }
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::drawGuiGroup(ofEventArgs&){
+    ofPushStyle();
+    ofSetColor(0, 170);
+    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+    ofPopStyle();
+    if(bGroupEnabled ){
+        group.draw();
+    }
+}
+
+
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::render(){
 	ofxDropdownOption::render();
-	if(bGroupEnabled){
-		group.draw();
-	}
 	
 	arrow.draw();
 	ofSetColor(thisTextColor, 200);
@@ -988,6 +1071,20 @@ const vector<T> & ofxDropdown_<T>::getAllSelected(){
 
 //--------------------------------------------------------------
 template<class T>
+bool ofxDropdown_<T>::containsName(const std::string& name) const {
+    auto it = find(options.begin(), options.end(), name);
+    return (it != options.end());
+}
+
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::containsValue(const T& value) const {
+    auto it = find(values.begin(), values.end(), value);
+    return (it != values.end());
+}
+
+//--------------------------------------------------------------
+template<class T>
 bool ofxDropdown_<T>::setOptionNameByValue(const T& value, const string& newName){
     auto it = find(values.begin(), values.end(), value);
     if(it != values.end()){// it was found. it should be found anyways but better to double check
@@ -1023,6 +1120,30 @@ bool ofxDropdown_<T>::updateOptionName(const string& currentName, const string& 
         return setOptionNameByIndex(index, newName);
     }
     return false;
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::setEnableSelectOnMouseRelease(bool bEnable){
+    _bSelectOnMouseRelease = bEnable;
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::enableSelectOnMouseRelease(){
+    _bSelectOnMouseRelease = true;
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::disableSelectOnMouseRelease(){
+    _bSelectOnMouseRelease = false;
+}
+
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::isEnabledSelectOnMouseRelease(){
+    return _bSelectOnMouseRelease;
 }
 
 
