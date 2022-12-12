@@ -2,11 +2,16 @@
 
 #include "ofxToggle.h"
 #include "ofImage.h"
+template<typename T>
+class ofxDropdown_;
+
 class ofxDropdownOption : public ofxBaseGui{
-  
+
 public:
 	ofxDropdownOption(){}
 	virtual ~ofxDropdownOption();
+    template<typename T>
+    friend class ofxDropdown_;
 	
 	void enableElement();
     void disableElement();
