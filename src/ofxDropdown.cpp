@@ -504,14 +504,10 @@ bool ofxDropdown_<T>::groupMouseReleased(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::groupMousePressed(ofMouseEventArgs & args){
-    if(isShowingDropdown()){
-        
-        if(!group.mousePressed(args))
-        {
-            hideDropdown();
-        }
-        return true;
-    }
+	if(isShowingDropdown()){
+		group.mousePressed(args);
+		return true;
+	}
     return false;
 }
 
@@ -534,8 +530,18 @@ bool ofxDropdown_<T>::mousePressed(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
-	if(ofxDropdownOption::mouseMoved(args)){
+	if(b.inside(args) && !isShowingDropdown()){
+		showDropdown();
 		return true;
+	}
+	if(isShowingDropdown()){
+		if(group.mouseMoved(args)){
+			return true;
+		}
+		if(!b.inside(args.x-1, args.y)){
+			hideDropdown();
+			return true;
+		}
 	}
 	return false;
 }
