@@ -526,16 +526,27 @@ bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mousePressed(ofMouseEventArgs & args){
-    if(setValue(args.x, args.y, true)){
-        return true;
-    }
+	if(isShowingDropdown()){
+		group.mousePressed(args);
+		return true;
+	}
 	return false;
 }
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
-	if(ofxDropdownOption::mouseMoved(args)){
+	if(ofxDropdownOption::mouseMoved(args) && !isShowingDropdown()){
+		showDropdown();
 		return true;
+	}
+	if(isShowingDropdown()){
+		if(group.mouseMoved(args)){
+			return true;
+		}
+		if(!b.inside(args.x-1, args.y)){
+			hideDropdown();
+			return true;
+		}
 	}
 	return false;
 }
