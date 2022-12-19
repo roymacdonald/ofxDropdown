@@ -328,6 +328,14 @@ public:
     ///\param width the new width to set in pixels.
     void setDropdownElementsWidth(float width);
     
+    ///\brief enables drawing a translucent black rectangle over everything but the dropdown.
+    /// Useful on  touch devices.
+    void enableDarkenedBackground();
+    ///\brief disables drawing a translucent black rectangle over everything but the dropdown.
+    void disableDarkenedBackground();
+    ///\brief returns if it has enabled drawing a translucent black rectangle over everything but the dropdown.
+    ///\return true if it is enable false if not
+    bool isDarkenedBackgroundEnabled();
     
     // ---------------------------------------------------
     // ----------------- Selection
@@ -512,6 +520,8 @@ protected:
 	ofParameter<bool> bSetChildrenCollapseOnSelection = {"Children Collapse On Selection", true};
     ofParameter<bool> bSetChildrenMultiSelection = {"Children Multi Selection", true};
     
+    ofParameter<bool> bDrawDarkBg = {"Darken background when showing", false};
+    
     ofParameterGroup dropdownParams;
 	
 	virtual bool setValue(float mx, float my, bool bCheck) override;
@@ -522,7 +532,7 @@ protected:
 	
 	void disableSiblings(ofxBaseGui* parent, ofxBaseGui* child);
 	
-    DropDownPosition dropDownPosition = DD_AUTO;
+    DropDownPosition dropDownPosition = DD_RIGHT;
     
     void _setGroupAutoPosition();
 	

@@ -63,7 +63,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	dropdownParams.add(bCollapseOnSelection);
     dropdownParams.add(bSetChildrenCollapseOnSelection);
     dropdownParams.add(bSetChildrenMultiSelection);
-    
+    dropdownParams.add(bDrawDarkBg);
     
     paramsListeners.push(bCollapseOnSelection.newListener(this, &ofxDropdown_<T>::collapseOnSelectionChanged));
     paramsListeners.push(bMultiselection.newListener(this, &ofxDropdown_<T>::multiSelectionChanged));
@@ -152,9 +152,9 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 	if(b){
 	if(sender){
 		
-		if(!bGroupEnabled){
-			ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
-		}else{
+//		if(!bGroupEnabled){
+//			ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
+//		}else{
 
 			auto& g = group.getParameter().castGroup(); 
 					
@@ -172,7 +172,7 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 				hideDropdown();
 			}
 			
-		}
+//		}
 	}else{
 		ofLogVerbose("ofxDropdown_::groupChanged(...)")  << "sender = null";
 	}
@@ -514,6 +514,9 @@ bool ofxDropdown_<T>::groupMousePressed(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
+    if(!bGuiActive) {
+        return b.inside(args);
+    }
 	if(ofxDropdownOption::mouseReleased(args) || b.inside(args)){
 		return true;
 	}
@@ -657,10 +660,12 @@ void ofxDropdown_<T>::generateDraw(){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::drawGuiGroup(ofEventArgs&){
-    ofPushStyle();
-    ofSetColor(0, 170);
-    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    ofPopStyle();
+    if(bDrawDarkBg){
+        ofPushStyle();
+        ofSetColor(0, 170);
+        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+        ofPopStyle();
+    }
     if(bGroupEnabled ){
         group.draw();
     }
@@ -1162,6 +1167,22 @@ bool ofxDropdown_<T>::isEnabledSelectOnMouseRelease(){
     return _bSelectOnMouseRelease;
 }
 
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::enableDarkenedBackground(){
+    bDrawDarkBg = true;
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::disableDarkenedBackground(){
+    bDrawDarkBg = false;
+}
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::isDarkenedBackgroundEnabled(){
+    return bDrawDarkBg.get();
+}
 
 
 //template class ofxDropdown_<uint8_t>;
