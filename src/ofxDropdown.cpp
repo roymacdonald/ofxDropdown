@@ -152,9 +152,9 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 	if(b){
 	if(sender){
 		
-		if(!bGroupEnabled){
-			ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
-		}else{
+//		if(!bGroupEnabled){
+//			ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
+//		}else{
 
 			auto& g = group.getParameter().castGroup(); 
 					
@@ -172,7 +172,7 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 				hideDropdown();
 			}
 			
-		}
+//		}
 	}else{
 		ofLogVerbose("ofxDropdown_::groupChanged(...)")  << "sender = null";
 	}
@@ -518,6 +518,9 @@ bool ofxDropdown_<T>::groupMousePressed(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
+    if(!bGuiActive) {
+        return b.inside(args);
+    }
 	if(ofxDropdownOption::mouseReleased(args) || b.inside(args)){
 		return true;
 	}
