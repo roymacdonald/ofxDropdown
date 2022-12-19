@@ -506,6 +506,7 @@ template<class T>
 bool ofxDropdown_<T>::groupMousePressed(ofMouseEventArgs & args){
 	if(isShowingDropdown()){
 		group.mousePressed(args);
+		hideDropdown();
 		return true;
 	}
     return false;
