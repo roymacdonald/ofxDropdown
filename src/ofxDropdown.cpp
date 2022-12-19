@@ -63,7 +63,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 	dropdownParams.add(bCollapseOnSelection);
     dropdownParams.add(bSetChildrenCollapseOnSelection);
     dropdownParams.add(bSetChildrenMultiSelection);
-    
+    dropdownParams.add(bDrawDarkBg);
     
     paramsListeners.push(bCollapseOnSelection.newListener(this, &ofxDropdown_<T>::collapseOnSelectionChanged));
     paramsListeners.push(bMultiselection.newListener(this, &ofxDropdown_<T>::multiSelectionChanged));
@@ -654,10 +654,12 @@ void ofxDropdown_<T>::generateDraw(){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::drawGuiGroup(ofEventArgs&){
-    ofPushStyle();
-    ofSetColor(0, 170);
-    ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
-    ofPopStyle();
+    if(bDrawDarkBg){
+        ofPushStyle();
+        ofSetColor(0, 170);
+        ofDrawRectangle(0, 0, ofGetWidth(), ofGetHeight());
+        ofPopStyle();
+    }
     if(bGroupEnabled ){
         group.draw();
     }
@@ -1159,6 +1161,22 @@ bool ofxDropdown_<T>::isEnabledSelectOnMouseRelease(){
     return _bSelectOnMouseRelease;
 }
 
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::enableDarkenedBackground(){
+    bDrawDarkBg = true;
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::disableDarkenedBackground(){
+    bDrawDarkBg = false;
+}
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::isDarkenedBackgroundEnabled(){
+    return bDrawDarkBg.get();
+}
 
 
 //template class ofxDropdown_<uint8_t>;
