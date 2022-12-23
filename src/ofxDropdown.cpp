@@ -11,6 +11,9 @@
 #include "ofGraphics.h"
 #include "ofxGui.h"
 
+template<class T>
+bool ofxDropdown_<T>::bShowOnOver = false;
+
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T>::ofxDropdown_(ofParameter<T> param, float width , float height){
@@ -64,6 +67,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
     dropdownParams.add(bSetChildrenCollapseOnSelection);
     dropdownParams.add(bSetChildrenMultiSelection);
     dropdownParams.add(bDrawDarkBg);
+    
     
     paramsListeners.push(bCollapseOnSelection.newListener(this, &ofxDropdown_<T>::collapseOnSelectionChanged));
     paramsListeners.push(bMultiselection.newListener(this, &ofxDropdown_<T>::multiSelectionChanged));
@@ -537,10 +541,24 @@ bool ofxDropdown_<T>::mousePressed(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
-	if(ofxDropdownOption::mouseMoved(args)){
-		return true;
-	}
-	return false;
+    if(bShowOnOver){
+        ofxDropdownOption::mouseMoved(args);
+        
+        if(!bGroupEnabled && bIsOver){
+            showDropdown();
+        }else if(!bIsOver && bGroupEnabled){
+            hideDropdown( true);
+        }
+        
+        return bIsOver;
+        
+    }else{
+        if(ofxDropdownOption::mouseMoved(args)){
+            return true;
+        }
+        return false;
+    }
+    
 }
 //--------------------------------------------------------------
 template<class T>
@@ -1177,6 +1195,24 @@ template<class T>
 bool ofxDropdown_<T>::isDarkenedBackgroundEnabled(){
     return bDrawDarkBg.get();
 }
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::enableShowWhenOver(){
+    bShowOnOver = true;
+}
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::disableShowWhenOver(){
+    bShowOnOver = false;
+}
+//--------------------------------------------------------------
+template<class T>
+bool ofxDropdown_<T>::isShowWhenOverEnabled(){
+    return bShowOnOver;
+}
+
+
 
 
 //template class ofxDropdown_<uint8_t>;

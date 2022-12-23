@@ -337,6 +337,14 @@ public:
     ///\return true if it is enable false if not
     bool isDarkenedBackgroundEnabled();
     
+    ///\brief enables showing the dropdown when the mouse is over without having to clic.
+    static void enableShowWhenOver();
+    ///\brief disables showing the dropdown when the mouse is over without having to clic. This is the default
+    static void disableShowWhenOver();
+    ///\brief get if showing when over is enabled.
+    ///\return true when enabled, false otherwise.
+    static bool isShowWhenOverEnabled();
+    
     // ---------------------------------------------------
     // ----------------- Selection
     // ---------------------------------------------------
@@ -519,6 +527,8 @@ protected:
 	ofParameter<bool> bMultiselection = { "Multi Selection", true};
 	ofParameter<bool> bSetChildrenCollapseOnSelection = {"Children Collapse On Selection", true};
     ofParameter<bool> bSetChildrenMultiSelection = {"Children Multi Selection", true};
+    static bool bShowOnOver;
+    
     
     ofParameter<bool> bDrawDarkBg = {"Darken background when showing", false};
     
