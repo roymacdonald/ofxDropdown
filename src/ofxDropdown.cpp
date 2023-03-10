@@ -73,7 +73,8 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
     paramsListeners.push(bMultiselection.newListener(this, &ofxDropdown_<T>::multiSelectionChanged));
     
     
-    
+    updateSelectedValue();
+
     bIsSetup = true;
     
 	return this;
@@ -89,21 +90,39 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(ofParameter<T> param, float width, floa
 	selectedValue.makeReferenceTo(param);
 	return setup(param.getName(), width, height);
 }
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::updateSelectedValue(){
+    auto it = find(values.begin(), values.end(), selectedValue.get());
+    if(it != values.end()){// it was found. it should be found anyways but better to double check
+        auto index = std::distance(values.begin(), it);
+        setSelectedValueByIndex(index, true);
+        
+        auto element = dynamic_cast <ofxDropdownOption *>(group.getControl(options[index]));
+        if(element){
+            element->enableElement();
+        }
+        setNeedsRedraw();
+    }
+}
+
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::selectedValueChanged(T & newvalue){
-	auto it = find(values.begin(), values.end(), newvalue);
-	if(it != values.end()){// it was found. it should be found anyways but better to double check
-		auto index = std::distance(values.begin(), it);
-		setSelectedValueByIndex(index, true);
+	updateSelectedValue();
+	// auto it = find(values.begin(), values.end(), newvalue);
+	// if(it != values.end()){// it was found. it should be found anyways but better to double check
+	// 	auto index = std::distance(values.begin(), it);
+	// 	setSelectedValueByIndex(index, true);
 		
 		
-		auto element = dynamic_cast <ofxDropdownOption *>(group.getControl(options[index]));
-		if(element){
-			element->enableElement();
-		}
-		setNeedsRedraw();
-	}
+	// 	auto element = dynamic_cast <ofxDropdownOption *>(group.getControl(options[index]));
+	// 	if(element){
+	// 		element->enableElement();
+	// 	}
+	// 	setNeedsRedraw();
+	// }
 	
 }
 //--------------------------------------------------------------
@@ -203,7 +222,7 @@ ofxDropdown_<string> * ofxDropdown_<string>::add(const string& value) {
 }
 
 
-
+//--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
     options.push_back(option);
@@ -224,26 +243,34 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
 		ofLogError("ofxDropdown_<T>::add") << "created children is nullptr";
 	}
 	
+	if(selectedValue.get() == value){
+        updateSelectedValue();
+    }
 
     return this;
 }
 
+//--------------------------------------------------------------
 #ifndef TARGET_WIN32
 template<>
 void ofxDropdown_<ofFile>::_setDropdownOptionValue(ofxDropdownOption* o, const ofFile& val){
     o->dropdownValue = val.path();
 }
 #endif
+
+//--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::_setDropdownOptionValue(ofxDropdownOption* o, const T& val){
     o->dropdownValue = ofToString(val);
 }
 
+//--------------------------------------------------------------
 template<class T>
 T ofxDropdown_<T>::_getDropdownOptionValue(ofxDropdownOption* o){
     return ofFromString<T>(o->dropdownValue);
 }
 
+//--------------------------------------------------------------
 #ifndef TARGET_WIN32
 template<>
 ofFile ofxDropdown_<ofFile>::_getDropdownOptionValue(ofxDropdownOption* o){

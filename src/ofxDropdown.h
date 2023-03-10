@@ -600,6 +600,9 @@ protected:
     T _getDropdownOptionValue(ofxDropdownOption* o);
     
     
+    void updateSelectedValue();
+
+
 private:
 	
 	std::vector<ofxDropdown_ *> childDropdowns;
