@@ -110,6 +110,7 @@ void ofxDropdown_<T>::updateSelectedValue(){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::selectedValueChanged(T & newvalue){
+    cout << "ofxDropdown_<T>::selectedValueChanged " <<endl;
 	updateSelectedValue();
 	// auto it = find(values.begin(), values.end(), newvalue);
 	// if(it != values.end()){// it was found. it should be found anyways but better to double check
@@ -368,14 +369,14 @@ string ofxDropdown_<T>::getOptionAt(size_t index){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::enableGuiGroupMouseAndDraw(){
-    int prio = int(defaultEventsPriority) - 200;
+//    int prio = int(defaultEventsPriority) - 200;
     guiGroupListeners.push(ofEvents().draw.newListener(this, &ofxDropdown_::drawGuiGroup, int(OF_EVENT_ORDER_AFTER_APP) + 100 ));
     
-    guiGroupListeners.push(ofEvents().mouseDragged.newListener(this, &ofxDropdown_::groupMouseDragged, prio));
-    guiGroupListeners.push(ofEvents().mouseMoved.newListener(&group, &ofxGuiGroup::mouseMoved, prio));
-    guiGroupListeners.push(ofEvents().mousePressed.newListener(this, &ofxDropdown_::groupMousePressed, prio));
-    guiGroupListeners.push(ofEvents().mouseReleased.newListener(this, &ofxDropdown_::groupMouseReleased, prio));
-    guiGroupListeners.push(ofEvents().mouseScrolled.newListener(this, &ofxDropdown_::scrollGroup, prio));
+//    guiGroupListeners.push(ofEvents().mouseDragged.newListener(this, &ofxDropdown_::groupMouseDragged, prio));
+//    guiGroupListeners.push(ofEvents().mouseMoved.newListener(&group, &ofxGuiGroup::mouseMoved, prio));
+//    guiGroupListeners.push(ofEvents().mousePressed.newListener(this, &ofxDropdown_::groupMousePressed, prio));
+//    guiGroupListeners.push(ofEvents().mouseReleased.newListener(this, &ofxDropdown_::groupMouseReleased, prio));
+//    guiGroupListeners.push(ofEvents().mouseScrolled.newListener(this, &ofxDropdown_::scrollGroup, prio));
     
 }
 
@@ -549,6 +550,9 @@ bool ofxDropdown_<T>::groupMousePressed(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
+    if(groupMouseReleased(args)){
+        return true;
+    }
     if(!bGuiActive) {
         return b.inside(args);
     }
@@ -560,6 +564,9 @@ bool ofxDropdown_<T>::mouseReleased(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mousePressed(ofMouseEventArgs & args){
+    if(groupMousePressed(args)){
+        return true;
+    }
     if(setValue(args.x, args.y, true)){
         return true;
     }
@@ -568,6 +575,11 @@ bool ofxDropdown_<T>::mousePressed(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
+    if(isShowingDropdown()){
+        if(group.mouseMoved(args)){
+            return true;
+        }
+    }
     if(bShowOnOver){
         ofxDropdownOption::mouseMoved(args);
         
@@ -590,6 +602,9 @@ bool ofxDropdown_<T>::mouseMoved(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseDragged(ofMouseEventArgs & args){
+    if(groupMouseDragged(args)){
+        return true;
+    }
 	if(ofxDropdownOption::mouseDragged(args)){
 		return true;
 	}
@@ -598,7 +613,10 @@ bool ofxDropdown_<T>::mouseDragged(ofMouseEventArgs & args){
 //--------------------------------------------------------------
 template<class T>
 bool ofxDropdown_<T>::mouseScrolled(ofMouseEventArgs & args){
-	if(ofxDropdownOption::mouseScrolled(args)){
+    if(scrollGroup(args)){
+        return true;
+    }
+    if(ofxDropdownOption::mouseScrolled(args)){
 		return true;
 	}
 	return false;
@@ -886,9 +904,26 @@ void ofxDropdown_<T>::_updateGroupWidth()
 
 
 
+#ifndef TARGET_WIN32
+bool checkExtensionIsAllowed(const ofFile& file, const vector<string>& allowedExtensions){
+    string ext = file.getExtension();
+    for(auto& e: allowedExtensions){
+        if( ext == e) return true;
+    }
+    return false;
+}
+#else
+bool checkExtensionIsAllowed(const string& filename, const vector<string>& allowedExtensions){
+    string ext = ofFilePath::getFileExt(filename);
+    for(auto& e: allowedExtensions){
+        if( ext == e) return true;
+    }
+    return false;
+}
+#endif
 //--------------------------------------------------------------
 template<class T>
-void ofxDropdown_<T>::addFromDir(ofxDropdown_* currentDD, const string& dirpath, const vector<string>& allowedExtensions)
+void ofxDropdown_<T>::addFromDir(ofxDropdown_* currentDD, const string& dirpath, const vector<string>& allowedExtensions, bool bRecursive)
 {
 	ofLogError("ofxDropdown_<T>::addFromDir" ) << "This function only works with ofxDirDropdown";
 }
@@ -899,16 +934,16 @@ ofxDropdown_<ofFile>
 #else
 ofxDropdown_<string>
 #endif
-::addFromDir(ofxDropdown_* currentDD, const string& dirpath, const vector<string>& allowedExtensions)
+::addFromDir(ofxDropdown_* currentDD, const string& dirpath, const vector<string>& allowedExtensions, bool bRecursive)
 {
 	if(currentDD != nullptr)
 	{
 	
 		ofDirectory dir(dirpath);
-		for(auto& ext: allowedExtensions)
-		{
-			dir.allowExt(ext);
-		}
+//		for(auto& ext: allowedExtensions)
+//		{
+//			dir.allowExt(ext);
+//		}
 		dir.listDir();
         dir.sort();
 
@@ -919,16 +954,21 @@ ofxDropdown_<string>
 			{
 				if(f.isDirectory())
 				{
-					
-					auto dd = newDropdown(f.getBaseName());
-					addFromDir(dd, f.getAbsolutePath(), allowedExtensions);
+                    if(bRecursive){
+                        auto dd = newDropdown(f.getBaseName());
+                        addFromDir(dd, f.getAbsolutePath(), allowedExtensions, bRecursive);
+                    }
 				}
 				else
 				{
 #ifndef TARGET_WIN32
- 					currentDD->add(f);
+                    if(checkExtensionIsAllowed(f, allowedExtensions)){
+                        currentDD->add(f);
+                    }
 #else
-                    currentDD->add(f.getAbsolutePath(), f.getFileName());
+                    if(checkExtensionIsAllowed(f.getAbsolutePath(), allowedExtensions)){
+                        currentDD->add(f.getAbsolutePath(), f.getFileName());
+                    }
 #endif
 				}
 			}

@@ -207,8 +207,9 @@ public:
     /// \brief populate this dropdown with the files from a directory
     /// @param dirpath The path to the directory used for populating
     /// \param allowedExtensions (optional) std::vector<string> with the extensions of files you want to be shown in the dropdown
+    /// \param bRecursive Make a recursive search within the folder. Meaning it will add the whole folder structure, folders within folders, etc
     /// \return true if it was capable to populate the dropdown, false otherwise
-    bool populateFromDirectory(const string& dirpath, const vector<string>& allowedExtensions = {})
+    bool populateFromDirectory(const string& dirpath, const vector<string>& allowedExtensions = {}, bool bRecursive = true)
     {
         ofFile d(dirpath);
         if(!d.isDirectory() || !d.exists())
@@ -216,7 +217,7 @@ public:
             return false;
         }
         
-        addFromDir(this, dirpath, allowedExtensions);
+        addFromDir(this, dirpath, allowedExtensions, bRecursive);
         disableMultipleSelection();
         enableCollapseOnSelection();
         
@@ -589,7 +590,7 @@ protected:
 	
 	std::string selectedOption;
 	
-	void addFromDir(ofxDropdown_<T>* currentDD, const string& dirpath, const vector<string>& allowedExtensions);
+	void addFromDir(ofxDropdown_<T>* currentDD, const string& dirpath, const vector<string>& allowedExtensions, bool bRecursive);
 	
 	void _updateGroupWidth();
 	
