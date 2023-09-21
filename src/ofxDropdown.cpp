@@ -110,7 +110,7 @@ void ofxDropdown_<T>::updateSelectedValue(){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::selectedValueChanged(T & newvalue){
-    cout << "ofxDropdown_<T>::selectedValueChanged " <<endl;
+ //   cout << "ofxDropdown_<T>::selectedValueChanged " <<endl;
 	updateSelectedValue();
 	// auto it = find(values.begin(), values.end(), newvalue);
 	// if(it != values.end()){// it was found. it should be found anyways but better to double check
@@ -352,6 +352,8 @@ void ofxDropdown_<T>::clear(){
 	childDropdowns.clear();
 	ownedChildren.clear();
 	ownedDropdowns.clear();
+	values.clear();
+	options.clear();
     groupListeners.unsubscribeAll();
     guiGroupListeners.unsubscribeAll();
     childDropdownListeners.unsubscribeAll();
