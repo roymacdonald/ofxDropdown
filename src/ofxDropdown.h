@@ -534,6 +534,8 @@ protected:
     ofParameter<bool> bDrawDarkBg = {"Darken background when showing", false};
     
     ofParameterGroup dropdownParams;
+    
+    ofParameterGroup groupParams;
 	
 	virtual bool setValue(float mx, float my, bool bCheck) override;
 	

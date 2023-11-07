@@ -55,8 +55,11 @@ ofxDropdown_<T> * ofxDropdown_<T>::setup(std::string name, float width , float h
 
 	selectedValue.setName(name);
 	setlectedValueListener = selectedValue.newListener(this, &ofxDropdown_<T>::selectedValueChanged);
+    
+    
+    groupParams.setName(name);
+    group.setup(groupParams);
 	
-	group.setup(name);
 	group.disableHeader();
 	group.setParent(this);
 	group.unregisterMouseEvents();
@@ -349,6 +352,10 @@ void ofxDropdown_<T>::childDropdownHidden(const void * sender, std::string& s){
 template<class T>
 void ofxDropdown_<T>::clear(){
 	group.clear();
+    for(size_t i = 0; i < groupParams.size(); i++){
+        groupParams.remove(i);
+    }
+    group.setup(groupParams);
 	childDropdowns.clear();
 	ownedChildren.clear();
 	ownedDropdowns.clear();
