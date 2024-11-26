@@ -113,21 +113,7 @@ void ofxDropdown_<T>::updateSelectedValue(){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::selectedValueChanged(T & newvalue){
- //   cout << "ofxDropdown_<T>::selectedValueChanged " <<endl;
 	updateSelectedValue();
-	// auto it = find(values.begin(), values.end(), newvalue);
-	// if(it != values.end()){// it was found. it should be found anyways but better to double check
-	// 	auto index = std::distance(values.begin(), it);
-	// 	setSelectedValueByIndex(index, true);
-		
-		
-	// 	auto element = dynamic_cast <ofxDropdownOption *>(group.getControl(options[index]));
-	// 	if(element){
-	// 		element->enableElement();
-	// 	}
-	// 	setNeedsRedraw();
-	// }
-	
 }
 //--------------------------------------------------------------
 template<class T>
@@ -143,13 +129,13 @@ void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify
             allSelectedValues.clear();
             allSelectedValues.push_back(selectedValue);
         }else{
-            
-            allSelectedValues.clear();
-            for(auto& c: ownedChildren){
-                if(c->isSelected()){
-                    allSelectedValues.push_back(_getDropdownOptionValue(c.get()));
-                }
-            }
+            _setAllSelectedValues();
+//            allSelectedValues.clear();
+//            for(auto& c: ownedChildren){
+//                if(c->isSelected()){
+//                    allSelectedValues.push_back(_getDropdownOptionValue(c.get()));
+//                }
+//            }
             
         }
 		if(bCollapseOnSelection){
@@ -161,6 +147,19 @@ void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify
             ofNotifyEvent(change_E_value, values[index], this);
         }
 	}
+}
+
+//--------------------------------------------------------------
+template<class T>
+void ofxDropdown_<T>::_setAllSelectedValues(){
+    allSelectedValues.clear();
+    for(auto& c: ownedChildren){
+        if(c->isSelected()){
+            allSelectedValues.push_back(_getDropdownOptionValue(c.get()));
+        }
+    }
+    
+    
 }
 //--------------------------------------------------------------
 template<class T>
@@ -176,6 +175,7 @@ void ofxDropdown_<T>::setSelectedValueByName( const std::string& valueName, bool
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
+//    std::cout << "groupChanged " << b << "\n";
 	if(b){
 	if(sender){
 		
@@ -204,9 +204,90 @@ void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 		ofLogVerbose("ofxDropdown_::groupChanged(...)")  << "sender = null";
 	}
 
+    }else{
+        if(!bMultiselection){
+            allSelectedValues.clear();
+            setDeselectedValue();
+        }else{
+            _setAllSelectedValues();
+            if(allSelectedValues.size() == 0){
+                setDeselectedValue();
+            }else{
+                for(auto& c: ownedChildren){
+                    if(c->isSelected()){
+                        selectedValue = _getDropdownOptionValue(c.get());
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+}
+//template class ofxDropdown_<uint8_t>;
+#ifndef TARGET_WIN32
+template<>
+void ofxDropdown_<ofFile>::setDeselectedValue(){
+	selectedValue = ofFile();
+    selectedOption = "";
+}
+#endif
+template<>
+void ofxDropdown_<std::string>::setDeselectedValue(){
+	selectedValue = std::string();
+    selectedOption = "";
+}
+template<> 
+void ofxDropdown_<int8_t>::setDeselectedValue(){
+	selectedValue = std::numeric_limits<int8_t>::max();
+    selectedOption = "";
+}
+template<> 
+void ofxDropdown_<uint8_t>::setDeselectedValue(){
+	selectedValue = std::numeric_limits<uint8_t>::max();
+    selectedOption = "";
+}
+template<> 
+void ofxDropdown_<int16_t>::setDeselectedValue(){
+	selectedValue = std::numeric_limits<int16_t>::max();
+    selectedOption = "";
+}
+template<> 
+void ofxDropdown_<uint16_t>::setDeselectedValue(){
+	selectedValue = std::numeric_limits<uint16_t>::max();
+    selectedOption = "";
+}
+template<> 
+void ofxDropdown_<int32_t>::setDeselectedValue(){
+	selectedValue = std::numeric_limits<int32_t>::max();
+    selectedOption = "";
+}
+template<> 
+void ofxDropdown_<uint32_t>::setDeselectedValue(){
+	selectedValue = std::numeric_limits<uint32_t>::max();
+    selectedOption = "";
+}
+template<> 
+void ofxDropdown_<int64_t>::setDeselectedValue(){
+	selectedValue = std::numeric_limits<int64_t>::max();
+    selectedOption = "";
+}
+template<> 
+void ofxDropdown_<uint64_t>::setDeselectedValue(){
+	selectedValue = std::numeric_limits<uint64_t>::max();
+    selectedOption = "";
 }
 
+//for some reason osx errors if this isn't defined
+#ifdef TARGET_OSX
+
+template<> 
+void ofxDropdown_<typename std::conditional<std::is_same<uint32_t, size_t>::value || std::is_same<uint64_t, size_t>::value, bool, size_t>::type>::setDeselectedValue(){
+    selectedValue = std::numeric_limits<size_t>::max();
+    selectedOption = "";
 }
+#endif
+
 //--------------------------------------------------------------
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value) {

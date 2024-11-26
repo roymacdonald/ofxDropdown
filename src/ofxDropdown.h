@@ -605,7 +605,10 @@ protected:
     
     void updateSelectedValue();
 
+    void _setAllSelectedValues();
 
+    void setDeselectedValue();
+    
 private:
 	
 	std::vector<ofxDropdown_ *> childDropdowns;
