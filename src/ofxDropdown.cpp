@@ -232,7 +232,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::add(const T& value, const string& option) {
     options.push_back(option);
     values.push_back(value);
     	
-	ownedChildren.emplace_back(make_unique<ofxDropdownOption>());
+	ownedChildren.emplace_back(std::make_unique<ofxDropdownOption>());
 	auto o = ownedChildren.back().get();
 	if(o){
 		o->setup(option, value == selectedValue.get());
@@ -323,7 +323,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(std::string name){
 //	auto dd = make_unique<ofxDropdown_<T>>(name, getWidth(), getHeight());
 	//ownedChildren.push_back(std::move(dd));
 //	cout<< "newDropdown: " << name << "\n";
-	ownedDropdowns.emplace_back(make_unique<ofxDropdown_<T>>(name, getWidth(), getHeight()));
+	ownedDropdowns.emplace_back(std::make_unique<ofxDropdown_<T>>(name, getWidth(), getHeight()));
 	auto dd = ownedDropdowns.back().get();
 	addDropdown(dd);
 	return dd;
@@ -332,7 +332,7 @@ ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(std::string name){
 template<class T>
 ofxDropdown_<T> * ofxDropdown_<T>::newDropdown(ofParameter<T> param){
 //	cout<< "newDropdown: " << param.getName() << "\n";
-	ownedDropdowns.emplace_back(make_unique<ofxDropdown_<T>>(param, getWidth(), getHeight()));
+	ownedDropdowns.emplace_back(std::make_unique<ofxDropdown_<T>>(param, getWidth(), getHeight()));
 	auto dd = ownedDropdowns.back().get();
 	addDropdown(dd);
 	return dd;

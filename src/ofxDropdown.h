@@ -361,8 +361,8 @@ public:
     // ---------------------------------------------------
 	
     std::vector<ofxDropdown_ *>& getChildDropdowns(){return childDropdowns;}
-    std::vector<unique_ptr<ofxDropdown_>>& getOwnedDropdowns(){return ownedDropdowns;}
-    std::vector<unique_ptr<ofxDropdownOption>>& getOwnedChildren(){return ownedChildren;}
+    std::vector<std::unique_ptr<ofxDropdown_>>& getOwnedDropdowns(){return ownedDropdowns;}
+    std::vector<std::unique_ptr<ofxDropdownOption>>& getOwnedChildren(){return ownedChildren;}
     
     ofxGuiGroup& getChildGuiGroup(){ return group;}
     const ofxGuiGroup& getChildGuiGroup() const{ return group;}
@@ -609,8 +609,8 @@ protected:
 private:
 	
 	std::vector<ofxDropdown_ *> childDropdowns;
-	std::vector<unique_ptr<ofxDropdown_>> ownedDropdowns;
-	std::vector<unique_ptr<ofxDropdownOption>> ownedChildren;
+	std::vector<std::unique_ptr<ofxDropdown_>> ownedDropdowns;
+	std::vector<std::unique_ptr<ofxDropdownOption>> ownedChildren;
     
     bool bRegisteredForMouseEvents = false;
     bool bIsSetup = false;
