@@ -118,6 +118,7 @@ void ofxDropdown_<T>::selectedValueChanged(T & newvalue){
 //--------------------------------------------------------------
 template<class T>
 void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify){
+//    std::cout << "ofxDropdown_<T>::setSelectedValueByIndex " << index << "  notify: " << std::boolalpha << bNotify <<"\n";
 	if(index < values.size()){
 		selectedValue = values[index];
 		selectedOption = options[index];
@@ -126,10 +127,11 @@ void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify
 			if(control != nullptr){
 				disableSiblings(&group,control);
 			}
-            allSelectedValues.clear();
-            allSelectedValues.push_back(selectedValue);
-        }else{
-            _setAllSelectedValues();
+//            allSelectedValues.clear();
+//            allSelectedValues.push_back(selectedValue);
+        }
+//        else{
+        _setAllSelectedValues();
 //            allSelectedValues.clear();
 //            for(auto& c: ownedChildren){
 //                if(c->isSelected()){
@@ -137,7 +139,7 @@ void ofxDropdown_<T>::setSelectedValueByIndex( const size_t& index, bool bNotify
 //                }
 //            }
             
-        }
+//        }
 		if(bCollapseOnSelection){
 			hideDropdown();
 		}
@@ -158,7 +160,16 @@ void ofxDropdown_<T>::_setAllSelectedValues(){
             allSelectedValues.push_back(_getDropdownOptionValue(c.get()));
         }
     }
-    
+    if(allSelectedValues.size() == 0 ){
+        setDeselectedValue();
+    }else{
+        for(auto& c: ownedChildren){
+            if(c->isSelected()){
+                selectedValue = _getDropdownOptionValue(c.get());
+                break;
+            }
+        }
+    }
     
 }
 //--------------------------------------------------------------
@@ -176,51 +187,43 @@ void ofxDropdown_<T>::setSelectedValueByName( const std::string& valueName, bool
 template<class T>
 void ofxDropdown_<T>::groupChanged(const void * sender,bool& b){
 //    std::cout << "groupChanged " << b << "\n";
-	if(b){
-	if(sender){
-		
-//		if(!bGroupEnabled){
-//			ofLogVerbose("ofxDropdown_::groupChanged(...)") << " bGroupEnabled == false";
-//		}else{
-
-			auto& g = group.getParameter().castGroup(); 
-					
-			int foundIndex = -1;           
-			for(int i = 0; i <g.size(); i++){
-				//			std::cout <<  i  << "  -  ";
-				if(g.getBool(i).getInternalObject() == ((ofParameter<bool> *)(sender))->getInternalObject()){
-					foundIndex = i;
-					break;	
-				}
-			}
-			if(foundIndex >= 0){
-				setSelectedValueByName(g.getVoid(foundIndex).getName(), true);
-			}else if(bCollapseOnSelection){
-				hideDropdown();
-			}
-			
-//		}
-	}else{
-		ofLogVerbose("ofxDropdown_::groupChanged(...)")  << "sender = null";
-	}
-
-    }else{
-        if(!bMultiselection){
-            allSelectedValues.clear();
-            setDeselectedValue();
-        }else{
-            _setAllSelectedValues();
-            if(allSelectedValues.size() == 0){
-                setDeselectedValue();
-            }else{
-                for(auto& c: ownedChildren){
-                    if(c->isSelected()){
-                        selectedValue = _getDropdownOptionValue(c.get());
-                        break;
-                    }
+    if(b){
+        if(sender){
+            auto& g = group.getParameter().castGroup();
+            
+            int foundIndex = -1;
+            for(int i = 0; i <g.size(); i++){
+                //			std::cout <<  i  << "  -  ";
+                if(g.getBool(i).getInternalObject() == ((ofParameter<bool> *)(sender))->getInternalObject()){
+                    foundIndex = i;
+                    break;
                 }
             }
+            if(foundIndex >= 0){
+                setSelectedValueByName(g.getVoid(foundIndex).getName(), true);
+            }else if(bCollapseOnSelection){
+                hideDropdown();
+            }
+        }else{
+            ofLogVerbose("ofxDropdown_::groupChanged(...)")  << "sender = null";
         }
+    }else{
+//        if(!bMultiselection){
+//            allSelectedValues.clear();
+//            setDeselectedValue();
+//        }else{
+            _setAllSelectedValues();
+//            if(allSelectedValues.size() == 0){
+//                setDeselectedValue();
+//            }else{
+//                for(auto& c: ownedChildren){
+//                    if(c->isSelected()){
+//                        selectedValue = _getDropdownOptionValue(c.get());
+//                        break;
+//                    }
+//                }
+//            }
+//        }
     }
     
 }
